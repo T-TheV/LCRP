@@ -12,6 +12,7 @@ Sistema de emprego baseado em checkpoints, voltado para roleplay de serviço urb
 | `/reparoeletrico`     | Executa o reparo no ponto atual. Necessário estar no local.    |
 | `/finalizartrabalho`  | Encerra o trabalho após os 5 reparos. Entrega a van e recebe.  |
 | `/tpemprego`          | (Admin/Dev) Teleporta para o ponto de emprego para testes.     |
+| `/tpe`                | (Admin/Dev) Teleporta para o ponto de reparos para testes.     | 
 
 ---
 
@@ -79,3 +80,88 @@ A estrutura do sistema está localizada em:
 ---
 
 > Desenvolvido por [TheV] com ♥.
+
+
+---
+# English Version
+# 🔧 Job System: Electrician
+
+A checkpoint-based job system designed for immersive urban roleplay with progression, routes, and task flow.
+
+---
+
+## 🚀 Commands
+
+| Command              | Description                                                         |
+|----------------------|----------------------------------------------------------------------|
+| `/iniciartrabalho`   | Starts the electrician job. Spawns a van and begins the task route. |
+| `/reparoeletrico`    | Performs a repair at the current point. Must be at the location.    |
+| `/finalizartrabalho` | Ends the job after all repairs. Van is delivered, and player is paid.|
+| `/tpemprego`         | (Admin/Dev) Teleports to the job start point for testing.           |
+| `/tpe`                | (Admin/Dev) Teleports to the job progress for testing.     | 
+
+## 📍 Location
+
+- **Job Point**: Displays a fixed 3D text with:
+Ponto de Emprego
+Eletricista
+/iniciartrabalho para começar
+
+
+- **Repair Points**: X different locations on the map showing 3D text + a blip with route during the job.
+
+---
+
+## 📦 Features
+
+- Service van spawn (`burrito`) with a custom plate
+- Repair progression system (1/x up to 5/x) with HUD updates
+- Distance check before allowing repair
+- Repair animation (`fixing_a_ped`)
+- Yellow map route (blip with setRoute)
+- Texts, HUD and blips cleared after delivery
+- Final payment of `$250` upon job completion
+
+---
+
+## 🎨 Client-side
+
+- 3D texts via `mp.labels.new`
+- HUD shown at bottom-center using events
+- Blips with GPS route
+- Fixed blip for job start (icon `354`)
+
+---
+
+## 🛠️ Development
+
+System structure is located in:
+
+- `modules/eletricista/controller/eletricista.controller.ts`
+- `modules/eletricista/events/eletricista.events.ts`
+- `modules/eletricista/data/pontos.ts`
+- `modules/eletricista/index.ts`
+- `client/index.ts` (HUD, blips, animations)
+
+---
+
+## 📌 Notes
+
+- Uses `Map<number, T>` to store per-player progress and labels
+- Requires `"nodejs": true` in `conf.json`
+- `mp.labels.new` needs proper `drawDistance` and `dimension` to display
+
+---
+
+## ✅ Flow Example
+
+1. Player goes to job start point
+2. Types `/iniciartrabalho`
+3. Visits repair points and types `/reparoeletrico`
+4. Returns to job point and types `/finalizartrabalho`
+5. Gets paid and visuals are cleaned up
+
+---
+
+> Developed by [TheV] with ♥.
+
