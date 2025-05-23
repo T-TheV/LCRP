@@ -1,1 +1,1 @@
-# LSCRP
+# Repo de auto aperfeiçoamento
