@@ -8,18 +8,18 @@ class EletricistaController {
 
 	iniciarTrabalho(player: PlayerMp) {
 		if (this.progresso.has(player.id)) {
-			player.outputChatBox('❗ Você já iniciou o trabalho. Vá até os pontos de reparo elétrico.'); // ou use /tpe.');
+			player.outputChatBox('Você já iniciou o trabalho. Vá até os pontos de reparo elétrico.'); // ou use /tpe.');
 			return;
 		}
 
 		if (player.vehicle) {
-			player.outputChatBox('🚫 Saia do veículo atual antes de iniciar o trabalho.');
+			player.outputChatBox('Saia do veículo atual antes de iniciar o trabalho.');
 			return;
 		}
 
 		const distancia = player.position.subtract(pontoInicialEletricista).length();
 		if (distancia > 10) {
-			player.outputChatBox('⚠️ Vá até o ponto de início de trabalho para usar este comando.');
+			player.outputChatBox('Vá até o ponto de início de trabalho para usar este comando.');
 			return;
 		}
 
@@ -30,7 +30,7 @@ class EletricistaController {
 
 		player.putIntoVehicle(van, 0);
 		this.progresso.set(player.id, 0);
-		player.outputChatBox('🔧 Trabalho iniciado! Vá até o ponto 1 e digite /reparoeletrico.');
+		player.outputChatBox('Trabalho iniciado! Vá até o ponto 1 e digite /reparoeletrico.');
 
 		const primeiroPonto = pontosDeReparo[0];
 		player.call('atualizarReparoHUD', [1, pontosDeReparo.length]);
@@ -59,17 +59,17 @@ class EletricistaController {
 		const progressoAtual = this.progresso.get(player.id) ?? 0;
 
 		if (this.repairing.has(player.id)) {
-			player.outputChatBox('⛔ Você já está em um reparo.');
+			player.outputChatBox('Você já está em um reparo.');
 			return;
 		}
 
 		if (this.aguardandoEntrega.has(player.id)) {
-			player.outputChatBox('📦 Você já concluiu os reparos. Vá devolver a van.');
+			player.outputChatBox('Você já concluiu os reparos. Vá devolver a van.');
 			return;
 		}
 
 		if (progressoAtual >= pontosDeReparo.length) {
-			player.outputChatBox('✅ Você já completou todos os reparos.');
+			player.outputChatBox('Você já completou todos os reparos.');
 			return;
 		}
 
@@ -77,13 +77,13 @@ class EletricistaController {
 		const distancia = player.position.subtract(ponto).length();
 
 		if (distancia > 5) {
-			player.outputChatBox('📍 Você não está no local correto para o reparo.');
+			player.outputChatBox('Você não está no local correto para o reparo.');
 			return;
 		}
 
 		this.repairing.add(player.id);
 		player.call('freezePlayer', [true]);
-		player.outputChatBox(`🔌 Iniciando reparo ${progressoAtual + 1}/${pontosDeReparo.length}...`);
+		player.outputChatBox(`Iniciando reparo ${progressoAtual + 1}/${pontosDeReparo.length}...`);
 		player.playAnimation('mini@repair', 'fixing_a_ped', 8.0, 49);
 
 		setTimeout(() => {
@@ -95,7 +95,7 @@ class EletricistaController {
 			this.progresso.set(player.id, novoProgresso);
 
 			if (novoProgresso >= pontosDeReparo.length) {
-				player.outputChatBox('✅ Todos os reparos foram feitos! Entregue a van no ponto de entrega com /finalizartrabalho.');
+				player.outputChatBox('Todos os reparos foram feitos! Entregue a van no ponto de entrega com /finalizartrabalho.');
 				player.call('clearReparoBlip');
 				player.call('setBlipDeEntrega', [
 					pontoInicialEletricista.x,
@@ -104,7 +104,7 @@ class EletricistaController {
 				]);
 				this.aguardandoEntrega.add(player.id);
 			} else {
-				player.outputChatBox(`✅ Reparo concluído! Vá ao ponto ${novoProgresso + 1}/${pontosDeReparo.length}.`);
+				player.outputChatBox(`Reparo concluído! Vá ao ponto ${novoProgresso + 1}/${pontosDeReparo.length}.`);
 				const proximoPonto = pontosDeReparo[novoProgresso];
 				player.call('setReparoBlip', [proximoPonto.x, proximoPonto.y, proximoPonto.z]);
 				player.call('atualizarReparoHUD', [novoProgresso + 1, pontosDeReparo.length]);
@@ -114,29 +114,29 @@ class EletricistaController {
 
 	finalizarEntrega(player: PlayerMp) {
 		if (!this.aguardandoEntrega.has(player.id)) {
-			player.outputChatBox('❌ Você não está com uma van para entregar.');
+			player.outputChatBox('Você não está com uma van para entregar.');
 			return;
 		}
 
 		const distancia = player.position.subtract(pontoInicialEletricista).length();
 		if (distancia > 10) {
-			player.outputChatBox('📍 Vá até o ponto de entrega para finalizar o serviço.');
+			player.outputChatBox('Vá até o ponto de entrega para finalizar o serviço.');
 			return;
 		}
 
 		if (!player.vehicle || player.seat !== 0) {
-			player.outputChatBox('🚐 Você precisa estar dirigindo a van para entregá-la.');
+			player.outputChatBox('Você precisa estar dirigindo a van para entregá-la.');
 			return;
 		}
 
 		player.call('freezePlayer', [true]);
 		player.playAnimation('gestures@m@standing@casual', 'gesture_hand_down', 8.0, 49);
-		player.outputChatBox('📦 Entregando van e assinando a ordem de serviço efetuada...');
+		player.outputChatBox('Entregando van e assinando a ordem de serviço efetuada...');
 
 		setTimeout(() => {
 			player.call('freezePlayer', [false]);
 			player.stopAnimation();
-			player.outputChatBox('✅ Van entregue com sucesso. Você recebeu $250 pelo serviço!');
+			player.outputChatBox('Van entregue com sucesso. Você recebeu $250 pelo serviço!');
 			player.giveMoney?.(250);
 
 			player.vehicle.destroy();
