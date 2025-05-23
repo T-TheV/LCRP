@@ -1,5 +1,21 @@
-/// <reference path="./@types/rage-mp/index.d.ts" />
+import path from 'path';
+import { config } from 'dotenv';
 
-mp.events.add('server:initialize', () => {
-    mp.console.logInfo('[Servidor] Aqui deveria inicializar o servidor com configurações básicas.');
+config({
+  path: path.resolve('.env')
 });
+console.log('[BOOT] setup.ts foi executado com sucesso.');
+
+mp.events.add('playerJoin', (player: PlayerMp) => {
+  console.log(`${player.name} entrou no servidor!`);
+  player.outputChatBox('🎉 Bem-vindo ao servidor Liberty City RP!');
+  player.giveMoney = (amount) => {
+    player.outputChatBox(`💵 Você recebeu $${amount}`);
+  };
+});
+mp.events.add('playerDisconnect', (player: PlayerMp) => {
+  player.outputChatBox('❌ Você saiu do servidor.');
+});
+
+
+

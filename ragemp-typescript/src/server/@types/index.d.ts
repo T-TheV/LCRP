@@ -1,3 +1,9 @@
-/// <reference path="../../shared/constants.ts" />
+declare global {
+	interface PlayerMp {
+		customProperty: number;
 
-// Declarações globais podem ser adicionadas aqui.
+		customMethod(): void;
+	}
+}
+
+export {};

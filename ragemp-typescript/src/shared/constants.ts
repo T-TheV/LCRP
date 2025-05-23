@@ -1,3 +1,3 @@
-export const SERVER_NAME = 'Liberty City RP';
-export const MAX_ATM_BALANCE = 25000;
-export const ATM_SLOT_CAPACITY = 5;
+export const SHARED_CONSTANTS = {
+	HELLO_WORLD: 'HELLO WORLD!'
+};

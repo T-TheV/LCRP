@@ -1,3 +1,9 @@
-/// <reference path="../../shared/constants.ts" />
+declare global {
+	interface PlayerMp {
+		customProperty: number;
 
-// Add your TypeScript declarations or imports here
+		customMethod(): void;
+	}
+}
+
+export {};
