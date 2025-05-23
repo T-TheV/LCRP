@@ -1,5 +1,8 @@
 import { SHARED_CONSTANTS } from '@shared/constants';
+import './sfx'; // Registra os eventos de som
 import './hud'; // Registra a HUD assim que este módulo é importado
+
+
 
 let currentBlip: BlipMp | null = null;
 
@@ -78,3 +81,6 @@ mp.events.add('setBlipDeEntrega', (x: number, y: number, z: number) => {
 
 // Limpa qualquer blip ativo
 mp.events.add('clearReparoBlip', clearCurrentBlip);
+
+
+// Sons

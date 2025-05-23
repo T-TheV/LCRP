@@ -8,6 +8,7 @@ import '../server/modules/trucking/utils/extendedPlayer.utils';
 import './modules/eletricista';
 import './modules/trucking';
 
+
 /* Constantes compartilhadas (exemplo) */
 import { SHARED_CONSTANTS } from '@shared/constants';
 

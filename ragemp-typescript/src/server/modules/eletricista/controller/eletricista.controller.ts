@@ -1,156 +1,126 @@
 import { pontosDeReparo, pontoInicialEletricista } from '../data/pontos';
 
 class EletricistaController {
-	private progresso: Map<number, number> = new Map();
-	private repairing: Set<number> = new Set();
-	private aguardandoEntrega: Set<number> = new Set();
-	private textosDeReparo: Map<number, TextLabelMp[]> = new Map();
+  private progresso = new Map<number, number>();
+  private repairing = new Set<number>();
+  private aguardandoEntrega = new Set<number>();
+  private textosDeReparo = new Map<number, TextLabelMp[]>();
 
-	iniciarTrabalho(player: PlayerMp) {
-		if (this.progresso.has(player.id)) {
-			player.outputChatBox('Você já iniciou o trabalho. Vá até os pontos de reparo elétrico.'); // ou use /tpe.');
-			return;
-		}
+  iniciarTrabalho(player: PlayerMp) {
+    if (this.progresso.has(player.id)) {
+      return player.outputChatBox('Você já iniciou o trabalho.');
+    }
+    if (player.vehicle) {
+      return player.outputChatBox('Saia do veículo antes de iniciar o trabalho.');
+    }
+    if (player.position.subtract(pontoInicialEletricista).length() > 10) {
+      return player.outputChatBox('Vá até o ponto de início para usar este comando.');
+    }
 
-		if (player.vehicle) {
-			player.outputChatBox('Saia do veículo atual antes de iniciar o trabalho.');
-			return;
-		}
+    const van = mp.vehicles.new(mp.joaat('burrito'), player.position, {
+      numberPlate: 'ELETRICISTA',
+      color: [[255, 255, 255], [255, 255, 255]]
+    });
+    player.putIntoVehicle(van, 0);
 
-		const distancia = player.position.subtract(pontoInicialEletricista).length();
-		if (distancia > 10) {
-			player.outputChatBox('Vá até o ponto de início de trabalho para usar este comando.');
-			return;
-		}
+    this.progresso.set(player.id, 0);
+    player.outputChatBox('Trabalho iniciado! Use /reparoeletrico nos pontos.');
 
-		const van = mp.vehicles.new(mp.joaat('burrito'), player.position, {
-			numberPlate: 'ELETRICISTA',
-			color: [[255, 255, 255], [255, 255, 255]],
-		});
+    player.call('atualizarReparoHUD', [1, pontosDeReparo.length]);
+    player.call('setReparoBlip', [
+      pontosDeReparo[0].x,
+      pontosDeReparo[0].y,
+      pontosDeReparo[0].z
+    ]);
 
-		player.putIntoVehicle(van, 0);
-		this.progresso.set(player.id, 0);
-		player.outputChatBox('Trabalho iniciado! Vá até o ponto 1 e digite /reparoeletrico.');
+    const labels = pontosDeReparo.map((p, i) =>
+      mp.labels.new(`~b~Ponto ${i + 1}\n~w~[${i + 1}/${pontosDeReparo.length}]`, p, {
+        font: 0,
+        drawDistance: 20,
+        los: true
+      })
+    );
+    this.textosDeReparo.set(player.id, labels);
 
-		const primeiroPonto = pontosDeReparo[0];
-		player.call('atualizarReparoHUD', [1, pontosDeReparo.length]);
-		player.call('setReparoBlip', [primeiroPonto.x, primeiroPonto.y, primeiroPonto.z]);
+    // ✅ Envia todos os pontos para o client monitorar proximidade
+    const pontosComRaio = pontosDeReparo.map(p => ({ x: p.x, y: p.y, z: p.z, r: 30 }));
+    player.call('elec:setSparkZones', [pontosComRaio]);
+    console.log(`[Server] ${player.name} recebeu os pontos para monitorar som.`);
+  }
 
-		// Cria textos 3D para todos os pontos de reparo
-		const labels: TextLabelMp[] = [];
+  startElectricalRepair(player: PlayerMp) {
+    const idx = this.progresso.get(player.id) ?? 0;
+    if (this.repairing.has(player.id)) return player.outputChatBox('Você já está em um reparo.');
+    if (this.aguardandoEntrega.has(player.id)) return player.outputChatBox('Reparos já concluídos.');
+    if (idx >= pontosDeReparo.length) return player.outputChatBox('Sem pontos para reparar.');
 
-		pontosDeReparo.forEach((ponto, index) => {
-			const texto = mp.labels.new(
-				`~b~Ponto de Reparo\n~w~[${index + 1}/${pontosDeReparo.length}]`,
-				ponto,
-				{
-					font: 0,
-					drawDistance: 20,
-					los: true
-				}
-			);
-			labels.push(texto);
-		});
+    const ponto = pontosDeReparo[idx];
+    if (player.position.subtract(ponto).length() > 5) {
+      return player.outputChatBox('Não está no local correto.');
+    }
 
-		this.textosDeReparo.set(player.id, labels);
-	}
+    this.repairing.add(player.id);
+    player.call('freezePlayer', [true]);
+    player.outputChatBox(`Reparo ${idx + 1}/${pontosDeReparo.length}...`);
+    player.playAnimation('mini@repair', 'fixing_a_ped', 8.0, 49);
 
-	startElectricalRepair(player: PlayerMp): void {
-		const progressoAtual = this.progresso.get(player.id) ?? 0;
+    setTimeout(() => {
+      player.call('freezePlayer', [false]);
+      player.stopAnimation();
+      this.repairing.delete(player.id);
 
-		if (this.repairing.has(player.id)) {
-			player.outputChatBox('Você já está em um reparo.');
-			return;
-		}
+      const next = idx + 1;
+      this.progresso.set(player.id, next);
 
-		if (this.aguardandoEntrega.has(player.id)) {
-			player.outputChatBox('Você já concluiu os reparos. Vá devolver a van.');
-			return;
-		}
+      if (next < pontosDeReparo.length) {
+        player.call('atualizarReparoHUD', [next + 1, pontosDeReparo.length]);
+        const p2 = pontosDeReparo[next];
+        player.call('setReparoBlip', [p2.x, p2.y, p2.z]);
+        player.outputChatBox(`Reparo concluído! Vá ao ponto ${next + 1}.`);
+      } else {
+        player.outputChatBox('Todos os reparos concluídos! Use /finalizartrabalho.');
+        player.call('clearReparoBlip');
+        player.call('setBlipDeEntrega', [
+          pontoInicialEletricista.x,
+          pontoInicialEletricista.y,
+          pontoInicialEletricista.z
+        ]);
+        this.aguardandoEntrega.add(player.id);
+      }
+    }, 10000);
+  }
 
-		if (progressoAtual >= pontosDeReparo.length) {
-			player.outputChatBox('Você já completou todos os reparos.');
-			return;
-		}
+  finalizarEntrega(player: PlayerMp) {
+    if (!this.aguardandoEntrega.has(player.id)) {
+      return player.outputChatBox('Sem van para entregar.');
+    }
+    if (player.position.subtract(pontoInicialEletricista).length() > 10) {
+      return player.outputChatBox('Vá até o ponto de entrega.');
+    }
+    if (!player.vehicle || player.seat !== 0) {
+      return player.outputChatBox('Você precisa estar dirigindo a van.');
+    }
 
-		const ponto = pontosDeReparo[progressoAtual];
-		const distancia = player.position.subtract(ponto).length();
+    player.call('freezePlayer', [true]);
+    player.playAnimation('gestures@m@standing@casual', 'gesture_hand_down', 8.0, 49);
+    player.outputChatBox('Entregando van...');
+    setTimeout(() => {
+      player.call('freezePlayer', [false]);
+      player.stopAnimation();
+      player.outputChatBox('Serviço concluído! $250 pago.');
+      player.giveMoney?.(250);
+      player.vehicle.destroy();
+      player.call('clearReparoBlip');
+      this.aguardandoEntrega.delete(player.id);
 
-		if (distancia > 5) {
-			player.outputChatBox('Você não está no local correto para o reparo.');
-			return;
-		}
+      const labels = this.textosDeReparo.get(player.id);
+      labels?.forEach(l => l.destroy());
+      this.textosDeReparo.delete(player.id);
 
-		this.repairing.add(player.id);
-		player.call('freezePlayer', [true]);
-		player.outputChatBox(`Iniciando reparo ${progressoAtual + 1}/${pontosDeReparo.length}...`);
-		player.playAnimation('mini@repair', 'fixing_a_ped', 8.0, 49);
-
-		setTimeout(() => {
-			player.call('freezePlayer', [false]);
-			player.stopAnimation();
-			this.repairing.delete(player.id);
-
-			const novoProgresso = progressoAtual + 1;
-			this.progresso.set(player.id, novoProgresso);
-
-			if (novoProgresso >= pontosDeReparo.length) {
-				player.outputChatBox('Todos os reparos foram feitos! Entregue a van no ponto de entrega com /finalizartrabalho.');
-				player.call('clearReparoBlip');
-				player.call('setBlipDeEntrega', [
-					pontoInicialEletricista.x,
-					pontoInicialEletricista.y,
-					pontoInicialEletricista.z
-				]);
-				this.aguardandoEntrega.add(player.id);
-			} else {
-				player.outputChatBox(`Reparo concluído! Vá ao ponto ${novoProgresso + 1}/${pontosDeReparo.length}.`);
-				const proximoPonto = pontosDeReparo[novoProgresso];
-				player.call('setReparoBlip', [proximoPonto.x, proximoPonto.y, proximoPonto.z]);
-				player.call('atualizarReparoHUD', [novoProgresso + 1, pontosDeReparo.length]);
-			}
-		}, 10000);
-	}
-
-	finalizarEntrega(player: PlayerMp) {
-		if (!this.aguardandoEntrega.has(player.id)) {
-			player.outputChatBox('Você não está com uma van para entregar.');
-			return;
-		}
-
-		const distancia = player.position.subtract(pontoInicialEletricista).length();
-		if (distancia > 10) {
-			player.outputChatBox('Vá até o ponto de entrega para finalizar o serviço.');
-			return;
-		}
-
-		if (!player.vehicle || player.seat !== 0) {
-			player.outputChatBox('Você precisa estar dirigindo a van para entregá-la.');
-			return;
-		}
-
-		player.call('freezePlayer', [true]);
-		player.playAnimation('gestures@m@standing@casual', 'gesture_hand_down', 8.0, 49);
-		player.outputChatBox('Entregando van e assinando a ordem de serviço efetuada...');
-
-		setTimeout(() => {
-			player.call('freezePlayer', [false]);
-			player.stopAnimation();
-			player.outputChatBox('Van entregue com sucesso. Você recebeu $250 pelo serviço!');
-			player.giveMoney?.(250);
-
-			player.vehicle.destroy();
-			player.call('clearReparoBlip');
-			this.aguardandoEntrega.delete(player.id);
-
-			// Remove textos 3D
-			const textos = this.textosDeReparo.get(player.id);
-			if (textos) {
-				textos.forEach(t => t.destroy());
-				this.textosDeReparo.delete(player.id);
-			}
-		}, 5000);
-	}
+      // ✅ Finaliza som visual e lógica do client também
+      player.call('elec:stopSparkSound');
+    }, 5000);
+  }
 }
 
 export default new EletricistaController();
