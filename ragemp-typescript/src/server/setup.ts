@@ -10,11 +10,12 @@ mp.events.add('playerJoin', (player: PlayerMp) => {
   console.log(`${player.name} entrou no servidor!`);
   player.outputChatBox('🎉 Bem-vindo ao servidor Liberty City RP!');
   player.giveMoney = (amount) => {
-    player.outputChatBox(`💵 Você recebeu $${amount}`);
+    player.outputChatBox(`Você recebeu $${amount}`);
   };
 });
 mp.events.add('playerDisconnect', (player: PlayerMp) => {
-  player.outputChatBox('❌ Você saiu do servidor.');
+  console.log(`${player.name} saiu do servidor!`);
+  player.outputChatBox('Você saiu do servidor.');
 });
 
 

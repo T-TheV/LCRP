@@ -66,7 +66,7 @@ mp.events.add('setBlipDeEntrega', (x: number, y: number, z: number) => {
 	}
 
 	currentBlip = mp.blips.new(354, new mp.Vector3(x, y, z), {
-		name: '📦 Devolver Van',
+		name: 'Devolver Van',
 		scale: 1.0,
 		color: 5,
 		shortRange: false
