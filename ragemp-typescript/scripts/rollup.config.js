@@ -29,28 +29,58 @@ const terserPlugin = isProduction && !useSWC
 
 function resourceCopyPlugin() {
   return {
-    name: 'resource-copy',
+    name: 'resource-copy-enhanced', // O nome do plugin pode ser o que você preferir
     writeBundle() {
-      // Garante as pastas necessárias em client_packages
-      jetpack.dir(`${buildOutput}/client_packages/html`);
-      jetpack.dir(`${buildOutput}/client_packages/sound`);
+      console.log('[Rollup] Iniciando cópia de assets para client_packages...');
 
-      // Copia audio.html do eletricista
-      jetpack.copy(
-        'src/client/modules/eletricista/audio.html',
-        `${buildOutput}/client_packages/html/audio.html`, 
-        { overwrite: true }
-      );
+      // Garante as pastas base que você já tinha (para outros módulos, se necessário)
+      jetpack.dir(`${buildOutput}/client_packages/html`); // Para audio.html do eletricista
+      // jetpack.dir(`${buildOutput}/client_packages/sound`); // Se você usa
 
+      // Pasta específica para os arquivos HTML do XM Radio (você já tem essa linha, ótimo!)
+      const xmRadioClientPackagesDir = `${buildOutput}/client_packages/xmradio`;
+      jetpack.dir(xmRadioClientPackagesDir);
+      console.log(`[Rollup] Diretório ${xmRadioClientPackagesDir} garantido.`);
 
-      // Copia spark.wav do eletricista
-      // jetpack.copy(
-      //   'src/client/modules/eletricista/spark.wav',
-      //   `${buildOutput}/client_packages/sound/spark.wav`,
-      //   { overwrite: true }
-      // );
+      // --- ARQUIVOS DO XM RADIO A SEREM COPIADOS ---
+      // !! IMPORTANTE: Verifique e ajuste os caminhos de ORIGEM (src) aqui !!
+      const xmRadioFilesToCopy = [
+        {
+          src: 'src/client/modules/xmradio/xmradio.html', // Caminho do seu arquivo xmradio.html principal
+          dest: `${xmRadioClientPackagesDir}/xmradio.html`
+        },
+        {
+          src: 'src/client/modules/xmradio/audio_handler.html', // Caminho do seu novo audio_handler.html
+          dest: `${xmRadioClientPackagesDir}/audio_handler.html`
+        },
+        {
+          src: 'src/client/modules/xmradio/miniplayer.html', // Caminho do seu novo miniplayer.html
+          dest: `${xmRadioClientPackagesDir}/miniplayer.html`
+        }
+      ];
 
-      console.log('[resource-copy] Assets copiados para client_packages (audio.html)');
+      xmRadioFilesToCopy.forEach(file => {
+        // Verifique se o caminho de origem (file.src) está correto para sua estrutura de projeto
+        if (jetpack.exists(file.src)) {
+          jetpack.copy(file.src, file.dest, { overwrite: true });
+          console.log(`[Rollup] Copiado (XM Radio): ${file.src.split('/').pop()} -> ${file.dest}`);
+        } else {
+          console.error(`[Rollup] ERRO AO COPIAR (XM Radio): Arquivo de origem NÃO ENCONTRADO em ${file.src}`);
+        }
+      });
+      // --- FIM DA SEÇÃO DO XM RADIO ---
+
+      // Mantém a cópia de outros assets que você já tinha (ex: audio.html do eletricista)
+      const eletricistaAudioSource = 'src/client/modules/eletricista/audio.html';
+      const eletricistaAudioDest = `${buildOutput}/client_packages/html/audio.html`;
+      if (jetpack.exists(eletricistaAudioSource)) {
+        jetpack.copy(eletricistaAudioSource, eletricistaAudioDest, { overwrite: true });
+        console.log(`[Rollup] Copiado (Outros): ${eletricistaAudioSource.split('/').pop()} -> ${eletricistaAudioDest}`);
+      } else {
+        console.log(`[Rollup] Arquivo (Outros): ${eletricistaAudioSource} não encontrado para cópia.`);
+      }
+      
+      console.log('[Rollup] Cópia de assets para client_packages finalizada.');
     }
   };
 }
