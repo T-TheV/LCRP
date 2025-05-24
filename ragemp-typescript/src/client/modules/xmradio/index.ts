@@ -272,7 +272,7 @@ function scanForAmbientRadios() {
         return;
     }
 
-    let closestVehicle: VehicleMp | null = null;
+    let closestVehicle: VehicleMp | undefined;
     let minDistance = MAX_AUDIBLE_DISTANCE + 1.01; // Um pouco acima para garantir a comparação correta
 
     mp.vehicles.forEachInStreamRange((v: VehicleMp) => {
@@ -299,7 +299,7 @@ function scanForAmbientRadios() {
     // --- Se chegamos aqui, closestVehicle é um VehicleMp válido e está no alcance ---
     // TypeScript agora deve ter certeza que closestVehicle não é null.
 
-    if (ambientSourceVehicleRemoteId !== closestVehicle.remoteId) { // Sem erro esperado aqui
+    if (closestVehicle && ambientSourceVehicleRemoteId !== closestVehicle.remoteId) { // Sem erro esperado aqui
         console.log(`[XMCLIENT-Ambient] Nova fonte de rádio ambiente encontrada ou mudança de fonte: ID ${closestVehicle.remoteId}, Dist: ${minDistance.toFixed(2)}`);
         
         if (ambientVolumeInterval) clearInterval(ambientVolumeInterval); // Para o loop de volume do veículo anterior
