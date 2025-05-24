@@ -34,7 +34,7 @@ class EletricistaController {
 		]);
 
 		const labels = pontosDeReparo.map((p, i) =>
-			mp.labels.new(`~b~Ponto ${i + 1}\n~w~[${i + 1}/${pontosDeReparo.length}]`, p, {
+			mp.labels.new(`~b~Ponto de Curto Elétrico ${i + 1}\n~w~[${i + 1}/${pontosDeReparo.length}]\n~y~Eletricista~n~~w~/reparoeletrico para consertar`, p, {
 				font: 0,
 				drawDistance: 20,
 				los: true
