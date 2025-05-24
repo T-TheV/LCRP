@@ -38,11 +38,11 @@ mp.events.add("elec:setSparkZones", (pontos: { x: number; y: number; z: number; 
       // else if (dist >= 35 && dist <= 40) newVolume = 0.1;
       // else if (dist > 40) newVolume = 0;
       // Considerando que o som começa a tocar dentro de 40 metros
-      if (dist <= 40) {
+      if (dist <= 12.25) {
         // Volume máximo a 0 metros, mínimo 0.1 a 40 metros
-        let maxDist = 40;
-        let minVolume = 0.1;
-        let maxVolume = 1.0;
+        let maxDist = 12.25;
+        let minVolume = 0.01;
+        let maxVolume = 0.2;
 
         // Fórmula linear decrescente
         newVolume = maxVolume - ((dist / maxDist) * (maxVolume - minVolume));
