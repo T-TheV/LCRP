@@ -7,6 +7,9 @@ import '../server/modules/trucking/utils/extendedPlayer.utils';
 /* Módulos de gameplay */
 import './modules/eletricista';
 import './modules/trucking';
+import './modules/coords';
+import './modules/xmradio';
+
 
 /* Constantes compartilhadas (exemplo) */
 import { SHARED_CONSTANTS } from '@shared/constants';
