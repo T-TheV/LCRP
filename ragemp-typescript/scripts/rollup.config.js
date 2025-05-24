@@ -31,34 +31,32 @@ function resourceCopyPlugin() {
   return {
     name: 'resource-copy',
     writeBundle() {
-      // Ensure necessary directories exist within client_packages
+      // Garante as pastas necessárias em client_packages
       jetpack.dir(`${buildOutput}/client_packages/html`);
       jetpack.dir(`${buildOutput}/client_packages/sound`);
 
-      // Copy audio.html to client_packages/html/
+      // Copia audio.html do eletricista
       jetpack.copy(
-        'src/client/modules/eletricista/audio.html', // Make sure this file exists or adjust path
+        'src/client/modules/eletricista/audio.html',
         `${buildOutput}/client_packages/html/audio.html`, 
         { overwrite: true }
       );
 
-      // Copy spark.wav to client_packages/sound/
+      // Copia clipboard.html do coords
       jetpack.copy(
-        'src/client/modules/eletricista/spark.wav', // Make sure this file exists in source
-        `${buildOutput}/client_packages/sound/spark.wav`, // Target path for WAV
+        'src/client/modules/coords/html/clipboard.html',
+        `${buildOutput}/client_packages/html/clipboard.html`,
         { overwrite: true }
       );
 
-      // REMOVED MP3 copy
-      /*
+      // Copia spark.wav do eletricista
       jetpack.copy(
-        'src/client/modules/eletricista/spark.mp3',
-        `${buildOutput}/client_packages/sound/spark.mp3`, 
+        'src/client/modules/eletricista/spark.wav',
+        `${buildOutput}/client_packages/sound/spark.wav`,
         { overwrite: true }
       );
-      */
 
-      console.log('[resource-copy] WAV Assets copied to client_packages');
+      console.log('[resource-copy] Assets copiados para client_packages (audio.html, clipboard.html, spark.wav)');
     }
   };
 }
@@ -68,16 +66,16 @@ function generateConfig({ isServer }) {
   const tsConfigPath = resolvePath([sourcePath, folder, 'tsconfig.json']);
   const inputFile    = resolvePath([sourcePath, folder, 'index.ts']);
   const outputFile   = isServer
-    ? resolvePath([buildOutput, 'packages', 'core', 'index.js']) // Server output path
-    : resolvePath([buildOutput, 'client_packages', 'index.js']); // Client output path
+    ? resolvePath([buildOutput, 'packages', 'core', 'index.js'])
+    : resolvePath([buildOutput, 'client_packages', 'index.js']);
 
   const external = isServer
     ? [...builtinModules, ...localDeps]
-    : null; // Client bundles everything
+    : null;
 
   const plugins = [
     tsPaths({ tsConfigPath }),
-    nodeResolve({ preferBuiltins: isServer }), // preferBuiltins only for server
+    nodeResolve({ preferBuiltins: isServer }),
     json(),
     commonjs(),
     useSWC
@@ -95,10 +93,8 @@ function generateConfig({ isServer }) {
         })
       : typescript({ tsconfig: tsConfigPath, check: false }),
     terserPlugin,
-
-    // Run resource copy only after client build is complete
     !isServer ? resourceCopyPlugin() : null
-  ].filter(Boolean); // Filter out null plugins
+  ].filter(Boolean);
 
   return {
     input: inputFile,
@@ -108,7 +104,7 @@ function generateConfig({ isServer }) {
     },
     external,
     plugins,
-    inlineDynamicImports: !isServer // Inline dynamic imports only for client
+    inlineDynamicImports: !isServer
   };
 }
 
@@ -116,4 +112,3 @@ export default [
   generateConfig({ isServer: true }),
   generateConfig({ isServer: false })
 ];
-
