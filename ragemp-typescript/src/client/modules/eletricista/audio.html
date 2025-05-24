@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SFX Eletricista Múltiplos</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: sans-serif;
+      color: lime;
+      font-size: 14px;
+    }
+    #log {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.6);
+      padding: 8px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="log">[SFX] Aguardando comandos...</div>
+
+  <script>
+    const log = document.getElementById('log');
+    const audios = {}; // index: HTMLAudioElement
+    const src = "https://sc1s.cdn.upx.com:8130/stream";
+
+    function logMsg(msg) {
+      if (log) log.innerText = `[SFX] ${msg}`;
+      console.log("[SFX] " + msg);
+    }
+
+    window.setSparkVolume = (index, volume) => {
+      const vol = Math.max(0, Math.min(1, volume));
+      if (audios[index]) {
+        audios[index].volume = vol;
+        logMsg(`🔊 Volume ${index}: ${vol.toFixed(2)}`);
+      }
+    };
+
+    window.playSpark = (index) => {
+      if (audios[index]) return;
+
+      const audio = document.createElement("audio");
+      audio.src = src;
+      audio.loop = true;
+      audio.volume = 0;
+      audio.play().then(() => {
+        logMsg(`▶️ Ponto ${index} iniciado`);
+      }).catch(err => {
+        logMsg(`⚠️ Erro ponto ${index}: ${err.message}`);
+      });
+
+      audios[index] = audio;
+    };
+
+    window.stopSpark = (index) => {
+      const audio = audios[index];
+      if (audio) {
+        audio.pause();
+        audio.remove();
+        delete audios[index];
+        logMsg(`⛔ Ponto ${index} parado`);
+      }
+    };
+
+    window.stopAllSparks = () => {
+      for (let index in audios) window.stopSpark(index);
+    };
+  </script>
+</body>
+</html>

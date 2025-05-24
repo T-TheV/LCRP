@@ -1,21 +1,16 @@
+/* Carrega variáveis de ambiente, logs iniciais, handlers genéricos */
 import './setup';
-import './modules/eletricista';
-import './modules/eletricista/types/extendedPlayer.d.ts';
 
+/* Extende PlayerMp com dist / giveMoney (precisa vir antes dos módulos) */
+import '../server/modules/trucking/utils/extendedPlayer.utils';
+
+/* Módulos de gameplay */
+import './modules/eletricista';
+import './modules/trucking';
+
+
+/* Constantes compartilhadas (exemplo) */
 import { SHARED_CONSTANTS } from '@shared/constants';
 
-mp.events.add('playerReady', (player) => {
-	console.log(`${player.name} is ready!`);
-
-	player.customProperty = 1;
-
-	player.customMethod = () => {
-		console.log('customMethod called.');
-	};
-
-	player.customMethod();
-});
-
+/* Exemplo de uso das constantes */
 console.log(SHARED_CONSTANTS.HELLO_WORLD);
-
-
