@@ -2,9 +2,10 @@ import { SHARED_CONSTANTS } from '@shared/constants';
 import './sfx'; // Registra os eventos de som
 import './hud'; // Registra a HUD assim que este módulo é importado
 
-
-
 let currentBlip: BlipMp | null = null;
+let electricEffectHandle: number | null = null;
+
+let podeLevarChoque = true;
 
 /* --------------------------------- READY --------------------------------- */
 mp.events.add('playerReady', () => {
@@ -82,5 +83,82 @@ mp.events.add('setBlipDeEntrega', (x: number, y: number, z: number) => {
 // Limpa qualquer blip ativo
 mp.events.add('clearReparoBlip', clearCurrentBlip);
 
+/* ---------------------------- SONS & EFEITOS ----------------------------- */
+mp.events.add('elec:playShockSound', () => {
+	mp.game.audio.playSoundFrontend(-1, "Electric_Shot", "DLC_HEISTS_GENERAL_FRONTEND_SOUNDS", true);
+});
 
-// Sons
+mp.events.add('elec:showElectricEffect', () => {
+	if (electricEffectHandle === null) {
+		const playerPed = mp.players.local.handle;
+		electricEffectHandle = mp.game.graphics.startParticleFxLoopedOnEntity(
+			"ent_amb_electricity_loop",
+			playerPed,
+			0, 0, 0,
+			0, 0, 0,
+			1,
+			false, false, false
+		);
+	}
+});
+
+mp.events.add('elec:stopShockEffect', () => {
+	if (electricEffectHandle !== null) {
+		mp.game.graphics.stopParticleFxLooped(electricEffectHandle, false);
+		electricEffectHandle = null;
+	}
+	mp.game.audio.stopSound(-1);
+});
+
+/* ---------------------------- CHOQUE ELÉTRICO ----------------------------- */
+function tentarChoque() {
+    if (!podeLevarChoque) return;
+
+    podeLevarChoque = false;
+    const player = mp.players.local;
+
+    // Decide se vai levar choque e o dano
+    const rand = Math.random();
+
+    let dano = 0;
+    if (rand < 0.90) { // 90% chance de levar choque
+        // Dano entre 5 e 15
+        dano = Math.floor(Math.random() * (15 - 5 + 1)) + 5;
+        player.health = Math.max(player.health - dano, 0);
+
+        // Mostrar notificações
+        mp.game.graphics.notify(`~r~Você levou um choque de ~w~${dano}~r~ de dano!`);
+        mp.gui.chat.push(`Você levou um choque de ${dano} de dano!`);
+
+        // Efeitos visuais e sonoros
+        mp.game.graphics.startScreenEffect("DeathFailNeutralIn", 0.5, true);
+        mp.game.cam.shakeGameplayCam("SMALL_EXPLOSION_SHAKE", 0.2);
+        mp.events.call('elec:showElectricEffect');
+        mp.events.call('elec:playShockSound');
+
+        // Para efeito e som após 1.5s
+        setTimeout(() => {
+            mp.events.call('elec:stopShockEffect');
+        }, 1500);
+    } else {
+        // Sem choque
+        mp.gui.chat.push(`Você não levou choque desta vez.`);
+    }
+
+    // Libera pra tentar choque novamente após 3 segundos
+    setTimeout(() => {
+        podeLevarChoque = true;
+    }, 3000);
+}
+
+
+
+// Exemplo: adiciona evento para usar a função
+mp.events.add('elec:tentarChoque', () => {
+	tentarChoque();
+});
+
+/* -------------------------- NOTIFICAÇÃO DE CHOQUE -------------------------- */
+mp.events.add('elec:notifyShock', (mensagem: string) => {
+	mp.game.graphics.notify(mensagem);
+});

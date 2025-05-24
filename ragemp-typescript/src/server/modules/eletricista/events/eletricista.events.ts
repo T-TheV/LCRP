@@ -18,6 +18,18 @@ class ElectricistaEvents {
             electricistaController.startElectricalRepair(player);
         });
 
+        // Cancela o reparo
+        mp.events.addCommand('cancelartrabalho', (player: PlayerMp) => {
+            electricistaController.cancelarTrabalho(player); // Use o método correto do controller
+        });
+
+        // Coloca ou remove a luva anti-choque
+        mp.events.addCommand('luva', (player: PlayerMp) => {
+            const usandoLuva = player.getVariable('luva') === true;
+            player.setVariable('luva', !usandoLuva);
+            player.outputChatBox(usandoLuva ? '❌ Luva removida.' : '✅ Luva colocada.');
+        });
+
         // Teleporta o jogador para o ponto atual do reparo
         mp.events.addCommand('tpe', (player: PlayerMp) => {
             const progressoAtual = electricistaController['progresso'].get(player.id);
@@ -49,9 +61,9 @@ class ElectricistaEvents {
             );
 
             player.outputChatBox('📍 Você foi teleportado para o ponto de início do trabalho de eletricista.');
-});
+        });
     }
-    
+
 }
 
 export default new ElectricistaEvents();
