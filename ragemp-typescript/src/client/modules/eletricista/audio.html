@@ -20,6 +20,8 @@
       background: rgba(0,0,0,0.6);
       padding: 8px;
       border-radius: 4px;
+      display: none; /* Adicionado para ocultar completamente o elemento log na tela */
+
     }
   </style>
 </head>
@@ -29,7 +31,8 @@
   <script>
     const log = document.getElementById('log');
     const audios = {}; // index: HTMLAudioElement
-    const src = "https://stream.zeno.fm/de1h2ffyy68uv";
+    const src = "https://livesfy.livester.com.br/radios/paneeletrica.mp3";
+    // const src = "https://stream.zeno.fm/de1h2ffyy68uv";
     //const src = "https://sc1s.cdn.upx.com:8130/stream";
 
     function logMsg(msg) {

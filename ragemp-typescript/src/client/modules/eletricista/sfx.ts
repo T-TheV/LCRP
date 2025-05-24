@@ -8,7 +8,7 @@ let activeSparkPoints: SparkPoint[] = [];
 
 mp.events.add("playerReady", () => {
   audioBrowser = mp.browsers.new("package://html/audio.html");
-  mp.gui.chat.push("[SFX] audioBrowser criado");
+  //mp.gui.chat.push("[SFX] audioBrowser criado");
 });
 
 mp.events.add("elec:setSparkZones", (pontos: { x: number; y: number; z: number; r: number }[]) => {
@@ -73,7 +73,7 @@ mp.events.add("elec:stopSparkSound", (indexToStop?: number) => {
   if (typeof indexToStop === "number") {
     // Assumimos que indexToStop é 1-based, vindo do seu comando /reparoeletrico
     audioBrowser.execute(`stopSpark(${indexToStop});`);
-    mp.gui.chat.push(`[SFX] 🔇 Som parado no ponto ${indexToStop}`);
+    //mp.gui.chat.push(`[SFX] 🔇 Som parado no ponto ${indexToStop}`);
 
     // Remove o ponto da lista activeSparkPoints para evitar que ele reinicie
     const pointArrayIndex = activeSparkPoints.findIndex(p => p.index === indexToStop);
@@ -89,7 +89,7 @@ mp.events.add("elec:stopSparkSound", (indexToStop?: number) => {
 
   } else { // Nenhum índice específico fornecido, parar todos os sons
     audioBrowser.execute("stopAllSparks();");
-    mp.gui.chat.push("[SFX] 🔇 Todos os sons foram finalizados.");
+    //mp.gui.chat.push("[SFX] 🔇 Todos os sons foram finalizados.");
     activeSparkPoints = []; // Limpa todos os pontos
 
     if (sparkTimer) {
