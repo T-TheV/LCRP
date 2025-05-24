@@ -14,7 +14,7 @@ mp.events.add("playerReady", () => {
 mp.events.add("elec:setSparkZones", (pontos: { x: number; y: number; z: number; r: number }[]) => {
   activeSparkPoints = pontos.map((p, i) => ({
     ...p,
-    index: i,
+    index: i+1, // Adiciona o índice começando de 1
     volume: 0
   }));
 
@@ -64,20 +64,60 @@ mp.events.add("elec:setSparkZones", (pontos: { x: number; y: number; z: number; 
         }
       }
     }
-  }, 1000);
+  }, 100);
 });
 
-mp.events.add("elec:stopSparkSound", () => {
-  if (audioBrowser) {
+mp.events.add("elec:stopSparkSound", (indexToStop?: number) => {
+  if (!audioBrowser) return;
+
+  if (typeof indexToStop === "number") {
+    // Assumimos que indexToStop é 1-based, vindo do seu comando /reparoeletrico
+    audioBrowser.execute(`stopSpark(${indexToStop});`);
+    mp.gui.chat.push(`[SFX] 🔇 Som parado no ponto ${indexToStop}`);
+
+    // Remove o ponto da lista activeSparkPoints para evitar que ele reinicie
+    const pointArrayIndex = activeSparkPoints.findIndex(p => p.index === indexToStop);
+
+    if (pointArrayIndex !== -1) {
+      activeSparkPoints.splice(pointArrayIndex, 1);
+      // Adicionando uma mensagem de debug para confirmar a remoção (opcional)
+      // mp.gui.chat.push(`[SFX DEBUG] Ponto ${indexToStop} removido da lista ativa.`);
+    } else {
+      // Adicionando uma mensagem de debug se o ponto não for encontrado (opcional)
+      // mp.gui.chat.push(`[SFX DEBUG] Ponto ${indexToStop} não encontrado na lista ativa para remoção.`);
+    }
+
+  } else { // Nenhum índice específico fornecido, parar todos os sons
     audioBrowser.execute("stopAllSparks();");
+    mp.gui.chat.push("[SFX] 🔇 Todos os sons foram finalizados.");
+    activeSparkPoints = []; // Limpa todos os pontos
+
+    if (sparkTimer) {
+      clearInterval(sparkTimer);
+      sparkTimer = null;
+    }
   }
 
-  activeSparkPoints = [];
-
-  if (sparkTimer) {
+  // Se não houver mais pontos ativos, limpa o timer (caso ele ainda exista)
+  if (activeSparkPoints.length === 0 && sparkTimer) {
     clearInterval(sparkTimer);
     sparkTimer = null;
+    // mp.gui.chat.push("[SFX DEBUG] Nenhum ponto ativo restante, sparkTimer parado."); // Opcional
   }
-
-  mp.gui.chat.push("[SFX] 🔇 Todos os sons foram finalizados.");
 });
+
+// Lógica que tava funcionando, mas não era a ideal
+// mp.events.add("elec:stopSparkSound", () => {
+//   if (audioBrowser) {
+//     audioBrowser.execute("stopAllSparks();");
+//   }
+
+//   activeSparkPoints = [];
+
+//   if (sparkTimer) {
+//     clearInterval(sparkTimer);
+//     sparkTimer = null;
+//   }
+
+//   mp.gui.chat.push("[SFX] 🔇 Todos os sons foram finalizados.");
+// });
