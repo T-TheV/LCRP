@@ -42,10 +42,16 @@ class EletricistaController {
     );
     this.textosDeReparo.set(player.id, labels);
 
-    // ✅ Envia todos os pontos para o client monitorar proximidade
-    const pontosComRaio = pontosDeReparo.map(p => ({ x: p.x, y: p.y, z: p.z, r: 30 }));
-    player.call('elec:setSparkZones', [pontosComRaio]);
-    console.log(`[Server] ${player.name} recebeu os pontos para monitorar som.`);
+    // ✅ Envia todos os pontos para o cliente com tag de índice
+    const pontosComId = pontosDeReparo.map((p, i) => ({
+      id: i,
+      x: p.x,
+      y: p.y,
+      z: p.z,
+      r: 30
+    }));
+    player.call('elec:setSparkZones', [pontosComId]);
+    console.log(`[Server] ${player.name} recebeu ${pontosComId.length} pontos de som.`);
   }
 
   startElectricalRepair(player: PlayerMp) {
@@ -68,6 +74,9 @@ class EletricistaController {
       player.call('freezePlayer', [false]);
       player.stopAnimation();
       this.repairing.delete(player.id);
+
+      // ✅ para som do ponto específico
+      player.call('elec:stopSparkSound', [idx]);
 
       const next = idx + 1;
       this.progresso.set(player.id, next);
@@ -118,7 +127,7 @@ class EletricistaController {
       this.textosDeReparo.delete(player.id);
 
       // ✅ Finaliza som visual e lógica do client também
-      player.call('elec:stopSparkSound');
+      player.call('elec:stopSparkSoundAll');
     }, 5000);
   }
 }

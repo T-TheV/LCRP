@@ -1,101 +1,78 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SFX Eletricista ()</title>
+  <title>SFX Eletricista Múltiplos</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
       background: transparent;
       font-family: sans-serif;
       color: lime;
       font-size: 14px;
     }
-    #status {
+    #log {
       position: absolute;
       top: 10px;
       left: 10px;
       background: rgba(0,0,0,0.6);
-      padding: 8px 10px;
+      padding: 8px;
       border-radius: 4px;
     }
   </style>
 </head>
 <body>
-  <div id="status">[SFX ] Aguardando comandos…</div>
-
-  <audio id="sfx" src="https://cdn300.savetube.su/download-direct/audio/128/6b8b47ea8ad6b3f01eb96f4b6bd4f5b8eadd4b25" loop></audio>
+  <div id="log">[SFX] Aguardando comandos...</div>
 
   <script>
-    const sfx = document.getElementById("sfx");
-    const status = document.getElementById("status");
-    let fadeInterval = null;
+    const log = document.getElementById('log');
+    const audios = {}; // index: HTMLAudioElement
+    const src = "https://sc1s.cdn.upx.com:8130/stream";
 
-    console.log("[SFX  HTML] Script carregado. Elemento de áudio:", sfx);
-
-    if (sfx) {
-      sfx.onerror = (e) => {
-        status.innerText = `[SFX ] ⚠️ Erro no elemento audio: ${sfx.error?.message || 'Erro desconhecido'}`;
-        console.error("[SFX HTML] Erro no elemento <audio>: ", sfx.error, e);
-      };
-      sfx.onloadeddata = () => console.log("[SFX  HTML] Dados do áudio carregados.");
-      sfx.oncanplaythrough = () => console.log("[SFX  HTML] Áudio pronto para tocar.");
-    } else {
-      console.error("[SFX HTML] Elemento <audio> não encontrado!");
+    function logMsg(msg) {
+      if (log) log.innerText = `[SFX] ${msg}`;
+      console.log("[SFX] " + msg);
     }
 
-    window.playSpark = () => {
-      console.log("[SFX HTML] Função playSpark() chamada.");
-      if (!sfx) return;
+    window.setSparkVolume = (index, volume) => {
+      const vol = Math.max(0, Math.min(1, volume));
+      if (audios[index]) {
+        audios[index].volume = vol;
+        logMsg(`🔊 Volume ${index}: ${vol.toFixed(2)}`);
+      }
+    };
 
-      clearInterval(fadeInterval);
-      sfx.volume = 0;
-      sfx.currentTime = 0;
-      sfx.play().then(() => {
-        status.innerText = "[ SFX ] 🔊 Tocando...";
-        console.log("[SFX HTML] 🔊 Áudio iniciado com sucesso.");
+    window.playSpark = (index) => {
+      if (audios[index]) return;
 
-        let volume = 0;
-        fadeInterval = setInterval(() => {
-          if (volume < 1) {
-            volume = Math.min(1, volume + 0.05);
-            sfx.volume = volume;
-          } else {
-            clearInterval(fadeInterval);
-          }
-        }, 100);
-
+      const audio = document.createElement("audio");
+      audio.src = src;
+      audio.loop = true;
+      audio.volume = 0;
+      audio.play().then(() => {
+        logMsg(`▶️ Ponto ${index} iniciado`);
       }).catch(err => {
-        status.innerText = `[ SFX ] ⚠️ Erro no play(): ${err.message}`;
-        console.error("[SFX HTML] Erro ao tentar sfx.play():", err);
+        logMsg(`⚠️ Erro ponto ${index}: ${err.message}`);
       });
+
+      audios[index] = audio;
     };
 
-    window.stopSpark = () => {
-      console.log("[SFX HTML] Função stopSpark() chamada.");
-      if (!sfx) return;
-
-      clearInterval(fadeInterval);
-      let volume = sfx.volume;
-
-      fadeInterval = setInterval(() => {
-        if (volume > 0) {
-          volume = Math.max(0, volume - 0.05);
-          sfx.volume = volume;
-        } else {
-          sfx.pause();
-          sfx.currentTime = 0;
-          status.innerText = "[ SFX ] 🔇 Parado";
-          console.log("[SFX HTML] 🔇 Áudio parado.");
-          clearInterval(fadeInterval);
-        }
-      }, 100);
+    window.stopSpark = (index) => {
+      const audio = audios[index];
+      if (audio) {
+        audio.pause();
+        audio.remove();
+        delete audios[index];
+        logMsg(`⛔ Ponto ${index} parado`);
+      }
     };
 
-    console.log("[SFX HTML] Funções playSpark e stopSpark definidas.");
+    window.stopAllSparks = () => {
+      for (let index in audios) window.stopSpark(index);
+    };
   </script>
 </body>
 </html>
