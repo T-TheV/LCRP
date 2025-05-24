@@ -42,21 +42,15 @@ function resourceCopyPlugin() {
         { overwrite: true }
       );
 
-      // Copia clipboard.html do coords
-      jetpack.copy(
-        'src/client/modules/coords/html/clipboard.html',
-        `${buildOutput}/client_packages/html/clipboard.html`,
-        { overwrite: true }
-      );
 
       // Copia spark.wav do eletricista
-      jetpack.copy(
-        'src/client/modules/eletricista/spark.wav',
-        `${buildOutput}/client_packages/sound/spark.wav`,
-        { overwrite: true }
-      );
+      // jetpack.copy(
+      //   'src/client/modules/eletricista/spark.wav',
+      //   `${buildOutput}/client_packages/sound/spark.wav`,
+      //   { overwrite: true }
+      // );
 
-      console.log('[resource-copy] Assets copiados para client_packages (audio.html, clipboard.html, spark.wav)');
+      console.log('[resource-copy] Assets copiados para client_packages (audio.html)');
     }
   };
 }
