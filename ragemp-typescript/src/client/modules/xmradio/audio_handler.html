@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Handler</title>
+    <style>
+        /* Adicionado para garantir total transparência */
+        html, body {
+            background-color: transparent !important; /* Essencial! */
+            overflow: hidden; /* Prevenir barras de rolagem acidentais */
+            margin: 0;
+            padding: 0;
+            display: none; /* teste meu */
+        }
+    </style>
+</head>
+<body>
+    <audio id="persistentAudioPlayer"></audio>
+
+    <script>
+        const persistentAudioPlayer = document.getElementById('persistentAudioPlayer');
+        let currentVolume = 0.5; 
+
+        persistentAudioPlayer.volume = currentVolume;
+
+        window.playStream = (url, volume) => {
+            if (url) {
+                if (persistentAudioPlayer.src !== url) {
+                    persistentAudioPlayer.src = url;
+                }
+                if (typeof volume === 'number' && !isNaN(volume)) {
+                    currentVolume = Math.max(0, Math.min(1, volume));
+                    persistentAudioPlayer.volume = currentVolume;
+                }
+                const playPromise = persistentAudioPlayer.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.error("[AudioHandler] Erro ao tentar tocar a stream: " + error.message);
+                        if (typeof mp !== 'undefined') {
+                            mp.trigger('client:xmradio:audioHandlerError', `Erro ao tocar ${url}: ${error.message}`);
+                        }
+                    });
+                }
+            } else {
+                console.warn("[AudioHandler] Tentativa de tocar com URL vazia.");
+            }
+        };
+
+        window.pauseStream = () => {
+            persistentAudioPlayer.pause();
+        };
+
+        window.stopStream = () => {
+            persistentAudioPlayer.pause();
+            persistentAudioPlayer.src = ""; 
+        };
+
+        window.setStreamVolume = (volume) => {
+            if (typeof volume === 'number' && !isNaN(volume)) {
+                currentVolume = Math.max(0, Math.min(1, volume));
+                persistentAudioPlayer.volume = currentVolume;
+            }
+        };
+
+        window.getStreamVolume = () => {
+            return persistentAudioPlayer.volume;
+        };
+
+        if (typeof mp !== 'undefined') {
+            mp.trigger('client:audio_handler:ready');
+            console.log('[AudioHandler] Pronto e evento enviado.');
+        } else {
+            console.log('[AudioHandler] Pronto (modo de desenvolvimento no navegador).');
+        }
+    </script>
+</body>
+</html>

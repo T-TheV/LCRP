@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>XM MiniPlayer</title>
+    <style>
+        :root {
+            /* Reutilizando e adaptando o estilo "Apple Face" */
+            --mini-bg-color: rgba(30, 30, 32, 0.85); /* #1c1c1e com um pouco mais de opacidade e leveza */
+            --mini-text-color: #f5f5f7; /* Branco suave */
+            --mini-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            --mini-border-radius: 10px; /* Cantos arredondados */
+            --mini-accent-color-danger: rgba(255, 69, 58, 0.8); /* Vermelho Apple para o botão de desligar */
+            --mini-accent-color-danger-hover: rgba(255, 69, 58, 1);
+        }
+
+        body {
+            background-color: transparent; /* Essencial para não cobrir o jogo */
+            font-family: var(--mini-font-family);
+            color: var(--mini-text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;    /* Centraliza o container horizontalmente */
+            align-items: flex-end;      /* Alinha o container na base da viewport */
+            height: 100vh;              /* Ocupa toda a altura da viewport */
+            overflow: hidden;           /* Evita barras de rolagem indesejadas */
+            -webkit-font-smoothing: antialiased; /* Melhora renderização da fonte */
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        #miniPlayerContainer {
+            background-color: var(--mini-bg-color);
+            /* Efeito de vidro fosco, se o navegador suportar bem */
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+            padding: 9px 18px; /* Espaçamento interno */
+            border-radius: var(--mini-border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* Sombra sutil para profundidade */
+            margin-bottom: 20px; /* Distância da borda inferior da tela */
+            
+            opacity: 0; /* Começa invisível, controlado por JS */
+            transform: translateY(20px); /* Efeito de surgir de baixo (opcional) */
+            transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+
+            display: flex;
+            align-items: center; /* Alinha o texto e o botão verticalmente */
+            gap: 12px; /* Espaço entre o texto e o botão de desligar */
+            max-width: 90%; /* Evita que seja largo demais em resoluções altas */
+        }
+
+        #miniPlayerContainer.visible {
+            opacity: 1;
+            transform: translateY(0); /* Animação para surgir */
+        }
+
+        #radioInfo {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;     /* Impede quebra de linha */
+            overflow: hidden;        /* Esconde texto que transborda */
+            text-overflow: ellipsis; /* Adiciona "..." se o texto for muito longo */
+            max-width: 300px;        /* Largura máxima para o texto da rádio */
+        }
+
+        #turnOffButton {
+            background-color: var(--mini-accent-color-danger);
+            color: white;
+            border: none;
+            border-radius: 50%; /* Botão perfeitamente redondo */
+            width: 24px;
+            height: 24px;
+            font-size: 13px; /* Tamanho do 'X' ou ícone */
+            font-weight: bold;
+            line-height: 24px; /* Centraliza o 'X' verticalmente */
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            flex-shrink: 0; /* Impede que o botão encolha */
+        }
+
+        #turnOffButton:hover {
+            background-color: var(--mini-accent-color-danger-hover);
+            transform: scale(1.1); /* Efeito de leve aumento no hover */
+        }
+        #turnOffButton:active {
+            transform: scale(1.0); /* Efeito de clique */
+        }
+
+    </style>
+</head>
+<body>
+    <div id="miniPlayerContainer"> <span id="radioInfo">Tocando: Nome da Rádio Aqui</span>
+        <button id="turnOffButton" title="Desligar Rádio">X</button>
+    </div>
+
+    <script>
+        const radioInfoElement = document.getElementById('radioInfo');
+        const containerElement = document.getElementById('miniPlayerContainer');
+        const turnOffButtonElement = document.getElementById('turnOffButton');
+
+        /**
+         * Atualiza o texto da rádio que está tocando.
+         * @param {string | null} radioName Nome da rádio ou null para limpar.
+         */
+        window.updateRadioInfo = (radioName) => {
+            if (radioName && radioName.trim() !== "") {
+                radioInfoElement.textContent = `Tocando: ${radioName}`;
+                radioInfoElement.title = `Tocando: ${radioName}`; // Tooltip para nome completo
+            } else {
+                radioInfoElement.textContent = "Rádio Desligada"; // Ou vazio, como preferir
+                radioInfoElement.title = "";
+            }
+        };
+
+        /**
+         * Alterna a visibilidade do mini-player.
+         * @param {boolean} show True para mostrar, false para esconder.
+         */
+        window.toggleVisibility = (show) => {
+            if (show) {
+                containerElement.classList.add('visible');
+            } else {
+                containerElement.classList.remove('visible');
+            }
+        };
+
+        // Ação do botão de desligar
+        turnOffButtonElement.onclick = () => {
+            if (typeof mp !== 'undefined') {
+                // Este evento sinaliza ao client/xmradio/index.ts para desligar completamente o rádio
+                mp.trigger('client:xmradio:requestFullStop');
+            } else {
+                // Para testes no navegador
+                console.log('[MiniPlayer] Pedido para desligar o rádio (modo dev).');
+                window.updateRadioInfo(null); // Simula desligamento
+                window.toggleVisibility(false);
+            }
+        };
+
+        // Informa ao client/xmradio/index.ts que este mini-player está pronto
+        if (typeof mp !== 'undefined') {
+            mp.trigger('client:miniplayer:ready');
+            console.log('[MiniPlayer] Pronto e evento enviado.');
+        } else {
+            // Para testes no navegador
+            console.log('[MiniPlayer] Pronto (modo de desenvolvimento no navegador).');
+            window.updateRadioInfo("Rádio Teste (Dev Mode)");
+            window.toggleVisibility(true);
+        }
+    </script>
+</body>
+</html>

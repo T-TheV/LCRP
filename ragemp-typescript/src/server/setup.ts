@@ -8,7 +8,7 @@ console.log('[BOOT] setup.ts executado.');
 /* Mensagens básicas de join/quit */
 mp.events.add('playerJoin', (player: PlayerMp) => {
   console.log(`${player.name} entrou no servidor!`);
-  player.outputChatBox('🎉 Bem-vindo ao servidor Liberty City RP!');
+  player.outputChatBox('Bem-vindo ao servidor Liberty City RolePlay!');
 });
 
 mp.events.add('playerQuit', (player: PlayerMp) => {
