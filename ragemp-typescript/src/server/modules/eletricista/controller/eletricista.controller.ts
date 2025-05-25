@@ -98,7 +98,7 @@ class EletricistaController {
 			}
 
 			if (player.getVariable('luva') === true) {
-				player.outputChatBox('🧤 Luva anti-choque ativada! Sem dano recebido.');
+				player.outputChatBox('Luva anti-choque ativada! Sem dano recebido.');
 				return;
 			}
 
@@ -171,7 +171,7 @@ class EletricistaController {
 			}
 
 			this.reparoTimers.delete(player.id);
-		}, 30000);
+		}, 10000);
 
 		this.reparoTimers.set(player.id, reparoTimeout);
 	}
