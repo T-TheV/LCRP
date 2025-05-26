@@ -19,6 +19,8 @@ class MotoristaController {
     public voltasRestantes = new Map<number, number>();
     public textosDeParada = new Map<number, TextLabelMp[]>();
     public blips = new Map<number, BlipMp[]>();
+    public embarques = new Map<number, number>(); // <- novo
+    public desembarques = new Map<number, number>(); // <- novo
 
 
 
@@ -59,100 +61,102 @@ class MotoristaController {
         this.blips.get(player.id)?.forEach(blip => blip.destroy());
         this.blips.delete(player.id);
     }
+private criarPassageiroParaPonto(player: PlayerMp, ponto: any, index: number) {
+  player.outputChatBox('Aguarde o passageiro subir...');
 
-    criarCheckpoint(player: PlayerMp) {
-    const rota = this.rotaMap.get(player.id);
-    const index = this.progresso.get(player.id) || 0;
-    if (!rota) return;
+  const npcsPendentes = this.passageirosNPCs.get(player.id)?.some(p => !p.entrouNoOnibus && !p.desembarcou);
+  if (npcsPendentes) {
+    player.outputChatBox('Aguarde o passageiro atual embarcar antes de continuar.');
+    return;
+  }
 
-    const ponto = rota.pontos[index];
+  const skinAleatoria = npcModelos[Math.floor(Math.random() * npcModelos.length)];
+  const npcPosition = ponto.pos_passageiro || ponto.pos;
 
-    const checkpoint = mp.checkpoints.new(1, ponto.pos, 3, {
-        direction: new mp.Vector3(0, 0, 0),
-        color: [255, 200, 0, 100],
-        visible: true,
-        dimension: player.dimension
+  const npc = mp.peds.new(mp.joaat(skinAleatoria), npcPosition, {
+    heading: 0,
+    dimension: player.dimension
+  });
+
+  const rota = this.rotaMap.get(player.id)!;
+
+  const proximoPassageiros = rota.pontos
+    .slice(index + 1)
+    .map((p, i) => ({ ponto: p, i: index + 1 + i }))
+    .filter(p => p.ponto.tipo === 'passageiro');
+
+  let destinoIndex = rota.pontos.length - 1;
+  if (proximoPassageiros.length > 0) {
+    const sorteado = proximoPassageiros[Math.floor(Math.random() * proximoPassageiros.length)];
+    destinoIndex = sorteado.i;
+  }
+
+  const passageiro: PassageiroNPC = {
+    ped: npc,
+    destinoIndex,
+    entrouNoOnibus: false,
+    desembarcou: false
+  };
+
+  const lista = this.passageirosNPCs.get(player.id) || [];
+  this.passageirosNPCs.set(player.id, [...lista, passageiro]);
+
+  setTimeout(() => {
+    if (!mp.players.exists(player) || !mp.peds.exists(npc)) return;
+    const veh = this.onibusMap.get(player.id);
+    if (!veh) return;
+
+    let seat = 1;
+    const usedSeats = new Set<number>();
+
+    this.passageirosNPCs.get(player.id)?.forEach(p => {
+      const s = (p as any).seat;
+      if (p.entrouNoOnibus && s !== undefined) {
+        usedSeats.add(s);
+      }
     });
 
-    // 🔒 Salva o checkpoint ativo no player
-    player.setVariable('motorista:checkpoint', checkpoint);
+    while (usedSeats.has(seat) && seat < 10) seat++;
 
-    const label = mp.labels.new(`~y~${ponto.tipo.toUpperCase()}`, ponto.pos, {
-        drawDistance: 20,
-        dimension: player.dimension
-    });
-    this.textosDeParada.set(player.id, [label]);
-
-    player.call('motorista:waypoint', [ponto.pos.x, ponto.pos.y, ponto.tipo]);
-
-    if (ponto.tipo === 'passageiro') {
-        player.outputChatBox('Aguarde o passageiro subir...');
-
-        const skinAleatoria = npcModelos[Math.floor(Math.random() * npcModelos.length)];
-        const npcPosition = ponto.pos_passageiro || ponto.pos;
-
-        const npc = mp.peds.new(mp.joaat(skinAleatoria), npcPosition, {
-            heading: 0,
-            dimension: player.dimension
-        });
-
-        const passageiro: PassageiroNPC = {
-            ped: npc,
-            destinoIndex: index + 1,
-            entrouNoOnibus: false
-        };
-
-        const lista = this.passageirosNPCs.get(player.id) || [];
-        this.passageirosNPCs.set(player.id, [...lista, passageiro]);
-
-        const veh = this.onibusMap.get(player.id);
-        if (veh) {
-            veh.engine = false;
-            veh.setVariable('motorista:congelado', true);
-        }
-
-        setTimeout(() => {
-            if (!mp.players.exists(player) || !mp.peds.exists(npc)) return;
-            const veh = this.onibusMap.get(player.id);
-            if (!veh) return;
-
-            let seat = 1;
-            const usedSeats = new Set<number>();
-
-            this.passageirosNPCs.get(player.id)?.forEach(p => {
-                const s = (p as any).seat;
-                if (p.entrouNoOnibus && s !== undefined) {
-                    usedSeats.add(s);
-                }
-            });
-
-            while (usedSeats.has(seat) && seat < 10) seat++;
-
-            if (seat >= 10) {
-                npc.destroy();
-                player.outputChatBox('Ônibus lotado. Passageiro não pôde embarcar.');
-                return;
-            }
-
-            (passageiro as any).seat = seat;
-            player.call('motorista:npcEntrar', [npc.id, veh.id, seat]);
-        }, 2000);
+    if (seat >= 10) {
+      npc.destroy();
+      player.outputChatBox('Ônibus lotado. Passageiro não pôde embarcar.');
+      return;
     }
 
-    const passageiros = this.passageirosNPCs.get(player.id) || [];
-    passageiros.forEach(p => {
-        if (p.entrouNoOnibus && index >= p.destinoIndex) {
-            this.passageirosEmOnibus.get(player.id)?.delete(p);
-            player.call('motorista:npcSair', [p.ped.id, this.onibusMap.get(player.id)?.id || 0]);
-            player.outputChatBox('Passageiro desembarcando no destino.');
-        }
-    });
+    (passageiro as any).seat = seat;
+    player.call('motorista:npcEntrar', [npc.id, veh.id, seat]);
+  }, 2000);
+}
 
-    const handler = (entity: PlayerMp) => {
+    criarCheckpoint(player: PlayerMp) {
+  const rota = this.rotaMap.get(player.id);
+  const index = this.progresso.get(player.id) || 0;
+  if (!rota) return;
+
+  const ponto = rota.pontos[index];
+
+  const checkpoint = mp.checkpoints.new(1, ponto.pos, 3, {
+    direction: new mp.Vector3(0, 0, 0),
+    color: [255, 200, 0, 100],
+    visible: true,
+    dimension: player.dimension
+  });
+
+  player.setVariable('motorista:checkpoint', checkpoint);
+
+  const label = mp.labels.new(`~y~${ponto.tipo.toUpperCase()}`, ponto.pos, {
+    drawDistance: 20,
+    dimension: player.dimension
+  });
+
+  this.textosDeParada.set(player.id, [label]);
+  player.call('motorista:waypoint', [ponto.pos.x, ponto.pos.y, ponto.tipo]);
+
+  const handler = (entity: PlayerMp) => {
   if (entity.id !== player.id) return;
   if (player.vehicle !== this.onibusMap.get(player.id)) return;
 
-  // 🔹 Destroi checkpoint e label
   checkpoint.destroy();
   label.destroy();
   mp.events.remove('playerEnterCheckpoint', handler);
@@ -160,24 +164,29 @@ class MotoristaController {
   const pontoTipo = ponto.tipo;
   const indexAtual = this.progresso.get(player.id) || 0;
 
-  // 🔹 Destroi blip do ponto atual, exceto o ponto INICIAL
   const blips = this.blips.get(player.id);
   const blipAtual = blips?.[indexAtual];
-
   if (pontoTipo !== 'inicio' && blipAtual && mp.blips.exists(blipAtual)) {
     blipAtual.destroy();
     blips![indexAtual] = null as any;
   }
 
-  // 🧍 Espera embarque do passageiro ser confirmado via evento
-  if (pontoTipo === 'passageiro') return;
+  if (pontoTipo === 'passageiro') {
+    const veh = this.onibusMap.get(player.id);
+    if (veh) {
+      veh.engine = false;
+      veh.setVariable('motorista:congelado', true);
+    }
 
-  // 🔴 Se for o ponto FIM
+    // ✅ Agora sim criamos o passageiro, pois o jogador chegou ao ponto
+    this.criarPassageiroParaPonto(player, ponto, indexAtual);
+    return;
+  }
+
   if (pontoTipo === 'fim') {
     const voltas = (this.voltasRestantes.get(player.id) || 1) - 1;
 
     if (voltas <= 0) {
-      // ✅ Fim de todas as voltas — só guia até a base final
       player.call('motorista:waypoint', [
         pontoInicialMotorista.x,
         pontoInicialMotorista.y,
@@ -187,26 +196,45 @@ class MotoristaController {
       return;
     }
 
-    // 🔁 Ainda tem voltas restantes, reinicia a rota
     this.voltasRestantes.set(player.id, voltas);
     this.progresso.set(player.id, 0);
     player.outputChatBox(`Nova volta iniciada. Voltas restantes: ${voltas}`);
     this.atualizarHUD(player);
 
-    // ❗️ IMPORTANTE: apenas gera o próximo checkpoint (sem recriar todos os blips)
     setTimeout(() => {
       this.criarCheckpoint(player);
     }, 100);
-
     return;
   }
 
-  // ⏩ Se for ponto normal (progresso/início), avança normalmente
   this.avancarParaProximoPonto(player);
 };
 
-    mp.events.add('playerEnterCheckpoint', handler);
+
+  mp.events.add('playerEnterCheckpoint', handler);
+
+  // ✅ Desembarques (executados sempre ao criar o checkpoint)
+  const passageiros = this.passageirosNPCs.get(player.id) || [];
+  const totalEmbarcados = passageiros.filter(p => p.entrouNoOnibus).length;
+  const limiteDesembarque = totalEmbarcados === 1 ? 1 : 2;
+
+  const candidatos = passageiros.filter(
+    p => p.entrouNoOnibus && !p.desembarcou && index === p.destinoIndex && mp.peds.exists(p.ped)
+  );
+
+  const embaralhados = candidatos.sort(() => Math.random() - 0.5).slice(0, limiteDesembarque);
+
+  embaralhados.forEach(p => {
+    p.desembarcou = true;
+    this.passageirosEmOnibus.get(player.id)?.delete(p);
+    player.call('motorista:npcSair', [p.ped.id, this.onibusMap.get(player.id)?.id || 0]);
+    player.outputChatBox('Passageiro desembarcando no destino.');
+  });
 }
+
+
+
+
 
 
 
@@ -222,7 +250,7 @@ class MotoristaController {
         }
 
         const rota = rotasDeOnibus[Math.floor(Math.random() * rotasDeOnibus.length)];
-        const voltas = 1 //+ Math.floor(Math.random() * 3); ATIVAR DE VOLTA DEPOIS
+        const voltas = 1 + Math.floor(Math.random() * 3); //alterar de 1 a 3 voltas
 
         this.rotaMap.set(player.id, rota);
         this.progresso.set(player.id, 0);
@@ -260,14 +288,14 @@ class MotoristaController {
         if (player.position.subtract(pontoInicialMotorista).length() > 10) {
             return player.outputChatBox('Você deve retornar ao ponto inicial para finalizar o serviço.');
         }
-
+        
         const embarcados = this.passageirosNPCs.get(player.id)?.filter(p => p.entrouNoOnibus).length || 0;
         const avaliacao = this.avaliacao.get(player.id) || 100;
         const pagamentoBase = 100;
         const pagamentoPorPassageiro = 30;
         const bonusPorAvaliacao = Math.floor(avaliacao / 10);
         const pagamentoTotal = pagamentoBase + (embarcados * pagamentoPorPassageiro) + bonusPorAvaliacao;
-
+        
         player.outputChatBox(`Trabalho finalizado. Você recebeu $${pagamentoTotal}. Avaliação final: ${avaliacao}/100`);
 
         this.progresso.delete(player.id);
@@ -280,7 +308,8 @@ class MotoristaController {
             }
         });
         this.blips.delete(player.id);
-
+        this.embarques.delete(player.id);
+        this.desembarques.delete(player.id);
         // (Opcional) recria apenas o blip do emprego
         mp.blips.new(513, pontoInicialMotorista, {
             name: 'Emprego: Motorista de Ônibus',
