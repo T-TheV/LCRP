@@ -1,23 +1,23 @@
-import jetpack        from 'fs-jetpack';
-import path           from 'path';
-import { config }     from 'dotenv';
-import nodeResolve    from '@rollup/plugin-node-resolve';
-import { swc }        from 'rollup-plugin-swc3';
-import json           from '@rollup/plugin-json';
-import commonjs       from '@rollup/plugin-commonjs';
-import tsPaths        from 'rollup-plugin-tsconfig-paths';
-import typescript     from 'rollup-plugin-typescript2';
-import { terser }     from 'rollup-plugin-terser';
+import jetpack from 'fs-jetpack';
+import path from 'path';
+import { config } from 'dotenv';
+import nodeResolve from '@rollup/plugin-node-resolve';
+import { swc } from 'rollup-plugin-swc3';
+import json from '@rollup/plugin-json';
+import commonjs from '@rollup/plugin-commonjs';
+import tsPaths from 'rollup-plugin-tsconfig-paths';
+import typescript from 'rollup-plugin-typescript2';
+import { terser } from 'rollup-plugin-terser';
 import builtinModules from 'builtin-modules';
 
 config({ path: path.resolve('.env') });
 
-const buildOutput   = 'dist';
-const sourcePath    = path.resolve('src');
-const pkgJson       = jetpack.read('package.json', 'json');
-const localDeps     = Object.keys(pkgJson.dependencies);
-const isProduction  = process.env.PRODUCTION_MODE === 'true';
-const useSWC        = process.env.COMPILER_USE_SWC === 'true';
+const buildOutput = 'dist';
+const sourcePath = path.resolve('src');
+const pkgJson = jetpack.read('package.json', 'json');
+const localDeps = Object.keys(pkgJson.dependencies);
+const isProduction = process.env.PRODUCTION_MODE === 'true';
+const useSWC = process.env.COMPILER_USE_SWC === 'true';
 
 function resolvePath(parts) {
   return jetpack.path(...parts);
@@ -79,17 +79,44 @@ function resourceCopyPlugin() {
       } else {
         console.log(`[Rollup] Arquivo (Outros): ${eletricistaAudioSource} não encontrado para cópia.`);
       }
-      
+      // --- ARQUIVOS DO MOTORISTA A SEREM COPIADOS ---
+      const motoristaClientDir = `${buildOutput}/client_packages/`;
+      jetpack.dir(motoristaClientDir);
+
+      const motoristaFilesToCopy = [
+        {
+          src: 'src/client/modules/motoristaOnibus/hud.html',
+          dest: `${motoristaClientDir}/html/hud.html`
+        },
+        {
+          src: 'src/client/modules/motoristaOnibus/hud.css',
+          dest: `${motoristaClientDir}/css/hud.css`
+        },
+        {
+          src: 'src/client/modules/motoristaOnibus/hud.js',
+          dest: `${motoristaClientDir}/js/hud.js`
+        }
+      ];
+
+      motoristaFilesToCopy.forEach(file => {
+        if (jetpack.exists(file.src)) {
+          jetpack.copy(file.src, file.dest, { overwrite: true });
+          console.log(`[Rollup] Copiado (Motorista): ${file.src.split('/').pop()} -> ${file.dest}`);
+        } else {
+          console.error(`[Rollup] ERRO AO COPIAR (Motorista): Arquivo de origem NÃO ENCONTRADO em ${file.src}`);
+        }
+      });
+
       console.log('[Rollup] Cópia de assets para client_packages finalizada.');
     }
   };
 }
 
 function generateConfig({ isServer }) {
-  const folder       = isServer ? 'server' : 'client';
+  const folder = isServer ? 'server' : 'client';
   const tsConfigPath = resolvePath([sourcePath, folder, 'tsconfig.json']);
-  const inputFile    = resolvePath([sourcePath, folder, 'index.ts']);
-  const outputFile   = isServer
+  const inputFile = resolvePath([sourcePath, folder, 'index.ts']);
+  const outputFile = isServer
     ? resolvePath([buildOutput, 'packages', 'core', 'index.js'])
     : resolvePath([buildOutput, 'client_packages', 'index.js']);
 
@@ -104,17 +131,17 @@ function generateConfig({ isServer }) {
     commonjs(),
     useSWC
       ? swc({
-          tsconfig: tsConfigPath,
-          minify: isProduction,
-          jsc: {
-            target: 'es2020',
-            parser: { syntax: 'typescript', dynamicImport: true, decorators: true },
-            transform: { legacyDecorator: true, decoratorMetadata: true },
-            externalHelpers: true,
-            keepClassNames: true,
-            loose: true
-          }
-        })
+        tsconfig: tsConfigPath,
+        minify: isProduction,
+        jsc: {
+          target: 'es2020',
+          parser: { syntax: 'typescript', dynamicImport: true, decorators: true },
+          transform: { legacyDecorator: true, decoratorMetadata: true },
+          externalHelpers: true,
+          keepClassNames: true,
+          loose: true
+        }
+      })
       : typescript({ tsconfig: tsConfigPath, check: false }),
     terserPlugin,
     !isServer ? resourceCopyPlugin() : null
