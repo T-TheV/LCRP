@@ -9,6 +9,7 @@ import './modules/eletricista';
 import './modules/trucking';
 import './modules/coords';
 import './modules/xmradio';
+import './modules/motoristaOnibus';
 
 
 /* Constantes compartilhadas (exemplo) */
