@@ -13,7 +13,7 @@ mp.events.addCommand('statusonibus', (player: PlayerMp) => {
   motoristaController.consultarStatus(player);
 });
 
-mp.events.addCommand('tpmotonibus', (player: PlayerMp) => {
+mp.events.addCommand('tpmo', (player: PlayerMp) => {
   player.position = pontoInicialMotorista;
   player.outputChatBox('Você foi teleportado para o emprego de Motorista de Ônibus.');
 });
