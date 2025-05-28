@@ -26,25 +26,21 @@ Sistema modular e avançado de mobílias para servidores Roleplay, criado sobre 
 ```bash
 src/
 ├── server/
-│ └── modules/
-│ └── mobilia/
-│ ├── commands/mobilia.commands.ts
-│ ├── controller/mobilia.controller.ts
-│ ├── data/catalogo.ts
-│ ├── events/mobilia.events.ts
-│ ├── types/mobilia.types.ts
-│ └── index.ts
+│   └── modules/
+│       └── mobilia/
+│           ├── commands/mobilia.commands.ts
+│           ├── controller/mobilia.controller.ts
+│           ├── data/catalogo.ts
+│           ├── events/mobilia.events.ts
+│           ├── types/mobilia.types.ts
+│           └── index.ts
 ├── client/
-│ └── modules/
-│ └── mobilia/
-│ ├── events/mobilia.client.ts
-│ └── index.ts
-├── cef/
-│ └── mobilias/
-│ ├── index.html
-│ ├── style.css
-│ └── app.ts
-
+│   └── modules/
+│       └── mobilia/
+│           ├── index.ts                  # Ponto único de entrada do módulo      
+│           ├── mobilia.html
+│           ├── mobilia.css
+│           └── mobilia.ts
 ```
 
 ## 🧠 Lógica de Acesso
