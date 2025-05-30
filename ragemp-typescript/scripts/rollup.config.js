@@ -59,6 +59,19 @@ function resourceCopyPlugin() {
         }
       ];
 
+      //arquivos de mobilias a serem copiados
+      // --- ARQUIVO DO SISTEMA DE MOBÍLIAS ---
+      const mobiliaHtmlSource = 'src/client/modules/mobilia/mobilia.html';
+      const mobiliaHtmlDest = `${buildOutput}/client_packages/html/mobilia.html`;
+
+      if (jetpack.exists(mobiliaHtmlSource)) {
+        jetpack.copy(mobiliaHtmlSource, mobiliaHtmlDest, { overwrite: true });
+        console.log(`[Rollup] Copiado (Mobilia): ${mobiliaHtmlSource.split('/').pop()} -> ${mobiliaHtmlDest}`);
+      } else {
+        console.log(`[Rollup] Arquivo (Mobilia): ${mobiliaHtmlSource} não encontrado para cópia.`);
+      }
+      // --- FIM DA SEÇÃO DO SISTEMA DE MOBÍLIAS ---
+
       xmRadioFilesToCopy.forEach(file => {
         // Verifique se o caminho de origem (file.src) está correto para sua estrutura de projeto
         if (jetpack.exists(file.src)) {

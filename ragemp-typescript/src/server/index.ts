@@ -10,7 +10,7 @@ import './modules/trucking';
 import './modules/coords';
 import './modules/xmradio';
 import './modules/motoristaOnibus';
-
+import './modules/teleporte';
 
 /* Constantes compartilhadas (exemplo) */
 import { SHARED_CONSTANTS } from '@shared/constants';
