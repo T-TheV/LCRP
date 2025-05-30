@@ -97,21 +97,6 @@ Este documento define a especificação completa do sistema de Arquitetura para 
 10. Exportação de presets entre propriedades
 11. Logs e segurança para admins
 
-## Responsáveis por Tarefa
-
-| Tarefa                                | Responsável        |
-| ------------------------------------- | ------------------ |
-| Comandos (`/mobilias`, `/cofre`, etc) | Backend Server Dev |
-| UI (7 abas completas)                 | Frontend (CEF) Dev |
-| Raycasting e HUD visual               | Client Dev         |
-| Sistema de câmeras                    | Client Dev         |
-| Integração com sistema de mobílias    | Fullstack          |
-| Alarme sonoro/visual                  | Client Dev         |
-| Cofre com senha e inventário          | Fullstack          |
-| Sistema de compra de mobílias         | Frontend + Backend |
-| Estilos/presets do arquiteto          | Fullstack          |
-| Logs e segurança                      | Backend Dev        |
-
 ## Observações
 
 * Comandos disponíveis: `/mobilias`, `/cofre`, `/cctv`, `/alarme`.
