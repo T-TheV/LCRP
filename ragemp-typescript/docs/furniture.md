@@ -1,5 +1,5 @@
 # Full Documentation: Architecture System Integrated with Furniture
-![UI Preview](https://i.imgur.com/Dbj0vwx.png)
+![UI Preview](https://imgur.com/3R4MOY6.png)
 
 ## Overview
 
