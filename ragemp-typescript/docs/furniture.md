@@ -107,6 +107,8 @@ This document defines the complete specification of the Architecture System for 
 
 ---
 
+PORTUGUESE:
+
 # Documentação Completa: Sistema de Arquitetura Integrado ao Furniture
 
 ## Visão Geral
