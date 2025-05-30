@@ -33,7 +33,7 @@ This document defines the complete specification of the Architecture System for 
 * Visual preview.
 * “Buy and place” button activates editing mode.
 
-### 3. Safe (/safe)
+### 3. Safe (/vault)
 
 * Password input.
 * Side-by-side inventory (player and safe).
@@ -96,12 +96,12 @@ This document defines the complete specification of the Architecture System for 
 
 9. Preset export between properties
 10. Admin logs and security
-11. Implement `/safe`, `/cctv`, `/alarm` commands
+11. Implement `/vault`, `/cctv`, `/alarm` commands
 12. Safe with interactive inventory and password system
 
 ## Notes
 
-* Available commands: `/furnitures`, `/safe`, `/cctv`, `/alarm`.
+* Available commands: `/furnitures`, `/vault`, `/cctv`, `/alarm`.
 * All other interactions occur via intuitive UI.
 * UI must follow modern best practices: accessible, clean, responsive.
 * Raycast is mandatory for physical object interactions (safe, camera).
