@@ -79,10 +79,9 @@ Este documento define a especificação completa do sistema de Arquitetura para 
 
 ### Prioridade Alta
 
-1. Implementar comandos `/mobilias`, `/cofre`, `/cctv`, `/alarme`
+1. Implementar comandos `/mobilias`
 2. Criar UI moderna com todas as 7 abas funcionais
 3. Raycast de seleção de mobília com mini HUD
-4. Cofre com inventário interativo e sistema de senha
 5. Sistema de compra de mobílias com preview e integração com saldo
 
 ### Prioridade Média
@@ -96,6 +95,8 @@ Este documento define a especificação completa do sistema de Arquitetura para 
 
 10. Exportação de presets entre propriedades
 11. Logs e segurança para admins
+12. Implementar comandos `/cofre`, `/cctv`, `/alarme`
+13, Cofre com inventário interativo e sistema de senha
 
 ## Observações
 
