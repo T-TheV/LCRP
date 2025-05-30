@@ -1,4 +1,5 @@
 # Full Documentation: Architecture System Integrated with Furniture
+![UI Preview](https://i.imgur.com/Dbj0vwx.png)
 
 ## Overview
 
@@ -110,7 +111,7 @@ This document defines the complete specification of the Architecture System for 
 PORTUGUESE:
 
 # Documentação Completa: Sistema de Arquitetura Integrado ao Furniture
-
+![UI Preview](https://i.imgur.com/Dbj0vwx.png)
 ## Visão Geral
 
 Este documento define a especificação completa do sistema de Arquitetura para servidor RAGE.MP, integrando-se diretamente ao sistema de mobílias (Furniture) existente. O sistema está estruturado para trabalhar com raycasting e responsividade total com CEF.
@@ -218,6 +219,5 @@ Este documento define a especificação completa do sistema de Arquitetura para 
 
 ---
 
-![UI Preview](https://i.imgur.com/Dbj0vwx.png)
 
 *O sistema deve ser modular e facilmente extensível para futuras adições.*
