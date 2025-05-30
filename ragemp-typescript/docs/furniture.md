@@ -80,7 +80,7 @@ This document defines the complete specification of the Architecture System for 
 
 ### High Priority
 
-1. Implement `/mobilias` command
+1. Implement `/furnitures` command
 2. Create modern UI with all 7 functional tabs
 3. Raycast for furniture selection with mini HUD
 4. Furniture purchase system with preview and balance integration
@@ -96,12 +96,12 @@ This document defines the complete specification of the Architecture System for 
 
 9. Preset export between properties
 10. Admin logs and security
-11. Implement `/cofre`, `/cctv`, `/alarme` commands
+11. Implement `/safe`, `/cctv`, `/alarm` commands
 12. Safe with interactive inventory and password system
 
 ## Notes
 
-* Available commands: `/mobilias`, `/cofre`, `/cctv`, `/alarme`.
+* Available commands: `/furnitures`, `/safe`, `/cctv`, `/alarm`.
 * All other interactions occur via intuitive UI.
 * UI must follow modern best practices: accessible, clean, responsive.
 * Raycast is mandatory for physical object interactions (safe, camera).
