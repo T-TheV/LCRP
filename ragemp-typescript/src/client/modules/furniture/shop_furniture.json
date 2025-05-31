@@ -1,0 +1,13 @@
+{
+  "Sala": {
+    "Sofás": [
+      {
+        "id": "1",
+        "name": "Sofá Moderno",
+        "description": "Um sofá confortável com estilo contemporâneo.",
+        "price": 500,
+        "model": "sofa_modern"
+      }
+    ]
+  }
+}

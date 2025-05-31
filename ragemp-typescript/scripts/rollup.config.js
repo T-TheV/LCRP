@@ -59,18 +59,33 @@ function resourceCopyPlugin() {
         }
       ];
 
-      //arquivos de mobilias a serem copiados
-      // --- ARQUIVO DO SISTEMA DE MOBÍLIAS ---
-      const mobiliaHtmlSource = 'src/client/modules/mobilia/mobilia.html';
-      const mobiliaHtmlDest = `${buildOutput}/client_packages/html/mobilia.html`;
+      // --- ARQUIVOS DO SISTEMA DE MOBÍLIAS A SEREM COPIADOS ---
+      const furnitureClientPackagesDir = `${buildOutput}/client_packages/html`;
 
-      if (jetpack.exists(mobiliaHtmlSource)) {
-        jetpack.copy(mobiliaHtmlSource, mobiliaHtmlDest, { overwrite: true });
-        console.log(`[Rollup] Copiado (Mobilia): ${mobiliaHtmlSource.split('/').pop()} -> ${mobiliaHtmlDest}`);
-      } else {
-        console.log(`[Rollup] Arquivo (Mobilia): ${mobiliaHtmlSource} não encontrado para cópia.`);
-      }
+      jetpack.dir(furnitureClientPackagesDir);
+
+      const furnitureFilesToCopy = [
+        {
+          src: 'src/client/modules/furniture/furniture.html',
+          dest: `${furnitureClientPackagesDir}/furniture.html`
+        },
+        {
+          src: 'src/client/modules/furniture/shop_furniture.json',
+          dest: `${furnitureClientPackagesDir}/shop_furniture.json`
+        }
+      ];
+
+      furnitureFilesToCopy.forEach(file => {
+        if (jetpack.exists(file.src)) {
+          jetpack.copy(file.src, file.dest, { overwrite: true });
+          console.log(`[Rollup] Copiado (Furniture): ${file.src.split('/').pop()} -> ${file.dest}`);
+        } else {
+          console.error(`[Rollup] ERRO AO COPIAR (Furniture): Arquivo de origem NÃO ENCONTRADO em ${file.src}`);
+        }
+      });
       // --- FIM DA SEÇÃO DO SISTEMA DE MOBÍLIAS ---
+
+
 
       xmRadioFilesToCopy.forEach(file => {
         // Verifique se o caminho de origem (file.src) está correto para sua estrutura de projeto
