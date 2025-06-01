@@ -1,0 +1,16 @@
+{
+  "Residencial": {
+    "Sala": {
+      "Sofás": [
+        {
+          "id": "1",
+          "name": "Sofá de Tecido Claro",
+          "description": "Estilo moderno com estrutura reforçada.",
+          "price": 1,
+          "model": "v_res_tre_sofa_s",
+          "dlc": "mpapartment"
+        }
+      ]
+    }
+  }
+}

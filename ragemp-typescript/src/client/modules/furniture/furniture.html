@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Furniture Menu</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 30px auto;
+      background-color: #2a2a2a;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .tabs {
+      display: flex;
+      background-color: #121212;
+      border-bottom: 1px solid #333;
+    }
+
+    .tabs button {
+      flex: 1;
+      padding: 14px;
+      background: none;
+      border: none;
+      color: #bbb;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .tabs button.active {
+      background-color: #6a0dad;
+      color: #fff;
+    }
+
+    .header {
+      font-size: 18px;
+      padding: 16px;
+      background-color: #1f1f1f;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+    }
+
+    .search {
+      padding: 12px 16px;
+      background-color: #1f1f1f;
+      border-bottom: 1px solid #333;
+    }
+
+    .search input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      background-color: #333;
+      color: white;
+      font-size: 14px;
+    }
+
+    .furniture-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #333;
+    }
+
+    .item .info span {
+      display: block;
+      font-size: 14px;
+    }
+
+    .item .actions button {
+      background-color: #6a0dad;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background-color 0.2s;
+    }
+
+    .item .actions button:hover {
+      background-color: #883ee0;
+    }
+
+    .footer {
+      padding: 16px;
+      background-color: #1f1f1f;
+      text-align: center;
+      border-top: 1px solid #333;
+    }
+
+    .select-button {
+      padding: 10px;
+      background-color: #6a0dad;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      max-width: 300px;
+      font-size: 15px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-button active" data-tab="furnituresTab">Furnitures</button>
+      <button class="tab-button" data-tab="shopTab">Shop</button>
+      <button class="tab-button" data-tab="vaultTab" disabled>Vault</button>
+      <button class="tab-button" data-tab="cctvTab" disabled>CCTV</button>
+      <button class="tab-button" data-tab="alarmTab" disabled>Alarme</button>
+      <button class="tab-button" data-tab="architectTab" disabled>Arquiteto</button>
+      <button class="tab-button" data-tab="settingsTab" disabled>Configurações</button>
+    </div>
+
+    <!-- Furnitures Tab -->
+    <div id="furnituresTab" class="tab-content active">
+      <div class="header">Furnitures (0)</div>
+      <div class="search">
+        <input type="text" id="search" placeholder="Search furniture..." oninput="filterFurniture()" />
+      </div>
+      <div class="furniture-list" id="furnitureList"></div>
+      <div class="footer">
+        <button class="select-button" onclick="selectWithMouse()">Select with mouse</button>
+      </div>
+    </div>
+
+    <!-- Shop Tab -->
+    <div id="shopTab" class="tab-content">
+      <div class="header">Furniture Shop</div>
+      <div class="search">
+        <input type="text" id="shopSearch" placeholder="Search items..." oninput="filterShop()" />
+      </div>
+      <div class="furniture-list" id="shopList"></div>
+    </div>
+
+    <!-- Placeholder Tabs -->
+    <div id="vaultTab" class="tab-content">
+      <div class="header">Vault</div>
+    </div>
+    <div id="cctvTab" class="tab-content">
+      <div class="header">CCTV</div>
+    </div>
+    <div id="alarmTab" class="tab-content">
+      <div class="header">Alarme</div>
+    </div>
+    <div id="architectTab" class="tab-content">
+      <div class="header">Arquiteto</div>
+    </div>
+    <div id="settingsTab" class="tab-content">
+      <div class="header">Configurações</div>
+    </div>
+  </div>
+
+  <script>
+    let allFurnitures = [];
+
+    window.addEventListener("furniture:data", (event) => {
+      const { furnitures } = event.detail;
+      allFurnitures = furnitures;
+      updateFurnitureList(allFurnitures);
+    });
+
+    function updateFurnitureList(items) {
+      const list = document.getElementById("furnitureList");
+      const header = document.querySelector("#furnituresTab .header");
+      list.innerHTML = "";
+      header.innerText = `Furnitures (${items.length})`;
+
+      items.forEach(item => {
+        const el = document.createElement("div");
+        el.className = "item";
+        el.innerHTML = `
+          <div class="info">
+            <span>${item.name || item.Name}</span>
+            <span style="color: #aaa; font-size: 12px;">Distância: ${(item.distance || 0).toFixed(2)}m</span>
+          </div>
+          <div class="actions">
+            <button onclick="edit('${item.id || item.Id}')">Editar</button>
+            <button onclick="removeItem('${item.id || item.Id}')">Remover</button>
+          </div>
+        `;
+        list.appendChild(el);
+      });
+    }
+
+    function filterFurniture() {
+      const query = document.getElementById("search").value.toLowerCase();
+      const filtered = allFurnitures.filter(item =>
+        (item.name || item.Name).toLowerCase().includes(query)
+      );
+      updateFurnitureList(filtered);
+    }
+
+    function selectWithMouse() {
+      mp.events.callRemote("furniture:selectWithMouse");
+    }
+
+    function edit(id) {
+      mp.events.callRemote("furniture:editFurniture", id);
+    }
+
+    function removeItem(id) {
+      mp.events.callRemote("furniture:removeFurniture", id);
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
+    }
+
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', () => showTab(button.getAttribute('data-tab')));
+    });
+
+    // SHOP LOADING via CEF event injection
+    window.addEventListener('shop:load', (event) => {
+      const shopData = event.detail;
+      renderShopItems(shopData);
+    });
+
+    function renderShopItems(shopData) {
+      const list = document.getElementById('shopList');
+      list.innerHTML = '';
+
+      for (const type in shopData) {
+        for (const category in shopData[type]) {
+          for (const subcategory in shopData[type][category]) {
+            const items = shopData[type][category][subcategory];
+            items.forEach(item => {
+              const el = document.createElement("div");
+              el.className = "item";
+              el.innerHTML = `
+                <div class="info">
+                  <span>${item.name}</span>
+                  <span style="color: #aaa; font-size: 12px;">${item.description}</span>
+                  <span style="color: #6a0dad; font-weight:bold;">$${item.price}</span>
+                </div>
+                <div class="actions">
+                  <button onclick="buyItem('${item.model}', ${item.price})">Buy</button>
+                </div>
+              `;
+              list.appendChild(el);
+            });
+          }
+        }
+      }
+    }
+
+    function filterShop() {
+      const query = document.getElementById('shopSearch').value.toLowerCase();
+      const list = document.getElementById('shopList');
+      list.querySelectorAll('.item').forEach(item => {
+        item.style.display = item.innerText.toLowerCase().includes(query) ? 'flex' : 'none';
+      });
+    }
+
+    function buyItem(model, price) {
+      mp.events.callRemote('furniture:buyItem', model, price);
+    }
+    mp.events.add('furniture:confirmPlacement', () => {
+      // Apenas dispara reload do menu do servidor
+      mp.events.callRemote('furniture:reloadFurnitures');
+    });
+
+  </script>
+</body>
+
+</html>
