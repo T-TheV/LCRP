@@ -72,6 +72,10 @@ function resourceCopyPlugin() {
         {
           src: 'src/client/modules/furniture/shop_furniture.json',
           dest: `${furnitureClientPackagesDir}/shop_furniture.json`
+        },
+        {
+          src: 'src/client/modules/furniture/shop_furniture.json',
+          dest: 'src/server/modules/furniture/data/shop_furniture.json'
         }
       ];
 

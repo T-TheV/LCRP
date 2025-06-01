@@ -26,36 +26,21 @@ export function getClosestFurniture(
 ) {
   const playerPos = player.position;
 
-  const closest = furnitures
-    .map((f) => ({
-      ...f,
-      distance: getDistance(playerPos, new mp.Vector3(f.posX, f.posY, f.posZ)),
-    }))
-    .sort((a, b) => a.distance - b.distance)[0];
+  let closest: typeof furnitures[0] | null = null;
+  let minDistance = Number.MAX_VALUE;
 
-  return closest?.distance <= 3.5 ? closest : null;
-}
-
-/**
- * Verifica se o jogador tem permissão para editar mobílias da propriedade.
- */
-export function canEditFurniture(
-  player: PlayerMp,
-  property: {
-    ownerId: string;
-    factionId?: string;
-    companyId?: string;
+  for (const furniture of furnitures) {
+    const distance = getDistance(playerPos, new mp.Vector3(furniture.posX, furniture.posY, furniture.posZ));
+    if (distance < minDistance) {
+      minDistance = distance;
+      closest = { ...furniture, distance };
+    }
   }
-): boolean {
-  const isAdmin = player.getVariable('adminDuty') === true;
 
-  if (isAdmin) return true;
-
-  const hasFaction = player.hasFactionPermission?.('furniture') === true;
-  const hasCompany = player.hasCompanyPermission?.('furniture') === true;
-
-  if (property.factionId && !hasFaction) return false;
-  if (property.companyId && !hasCompany) return false;
-
-  return property.ownerId === player.getVariable('characterId');
+  return closest && closest.distance <= 3.5 ? closest : null;
 }
+/**
+ * Verifica se o jogador pode editar a mobília.
+ * Aqui você pode adicionar lógica para verificar permissões, etc.
+ */
+// function canEditFurniture

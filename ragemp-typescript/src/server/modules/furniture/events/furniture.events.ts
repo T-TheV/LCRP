@@ -22,3 +22,7 @@ mp.events.add('furniture:removeClosest', (player: PlayerMp) => {
 mp.events.add('furniture:buyItem', (player, model: string, price: number) => {
   furnitureController.buyItem(player, model, price);
 });
+
+mp.events.add('furniture:reloadFurnitures', (player: PlayerMp) => {
+  furnitureController.openFurnitureMenu(player);
+});

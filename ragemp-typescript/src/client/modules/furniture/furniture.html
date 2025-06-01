@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +13,6 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      /*background-color: #1e1e1e;*/
       color: #fff;
     }
 
@@ -133,6 +133,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="tabs">
@@ -166,17 +167,26 @@
       <div class="furniture-list" id="shopList"></div>
     </div>
 
-    <!-- Other tabs (placeholders) -->
-    <div id="vaultTab" class="tab-content"><div class="header">Vault</div></div>
-    <div id="cctvTab" class="tab-content"><div class="header">CCTV</div></div>
-    <div id="alarmTab" class="tab-content"><div class="header">Alarme</div></div>
-    <div id="architectTab" class="tab-content"><div class="header">Arquiteto</div></div>
-    <div id="settingsTab" class="tab-content"><div class="header">Configurações</div></div>
+    <!-- Placeholder Tabs -->
+    <div id="vaultTab" class="tab-content">
+      <div class="header">Vault</div>
+    </div>
+    <div id="cctvTab" class="tab-content">
+      <div class="header">CCTV</div>
+    </div>
+    <div id="alarmTab" class="tab-content">
+      <div class="header">Alarme</div>
+    </div>
+    <div id="architectTab" class="tab-content">
+      <div class="header">Arquiteto</div>
+    </div>
+    <div id="settingsTab" class="tab-content">
+      <div class="header">Configurações</div>
+    </div>
   </div>
 
   <script>
     let allFurnitures = [];
-    let shopData = {}; // JSON de loja (por categoria)
 
     window.addEventListener("furniture:data", (event) => {
       const { furnitures } = event.detail;
@@ -196,7 +206,7 @@
         el.innerHTML = `
           <div class="info">
             <span>${item.name || item.Name}</span>
-            <span style="color: #aaa; font-size: 12px;">Distância: ${(item.distance || item.Distance || 0).toFixed(2)}m</span>
+            <span style="color: #aaa; font-size: 12px;">Distância: ${(item.distance || 0).toFixed(2)}m</span>
           </div>
           <div class="actions">
             <button onclick="edit('${item.id || item.Id}')">Editar</button>
@@ -230,7 +240,6 @@
     function showTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
-
       document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
       document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
     }
@@ -239,39 +248,36 @@
       button.addEventListener('click', () => showTab(button.getAttribute('data-tab')));
     });
 
-    // --------- SHOP LOADING --------
-    fetch('shop_furniture.json')
-      .then(res => res.json())
-      .then(json => {
-        shopData = json;
-        renderShopItems();
-      })
-      .catch(() => {
-        document.getElementById('shopList').innerHTML = '<p style="padding:12px;">Erro ao carregar loja.</p>';
-      });
+    // SHOP LOADING via CEF event injection
+    window.addEventListener('shop:load', (event) => {
+      const shopData = event.detail;
+      renderShopItems(shopData);
+    });
 
-    function renderShopItems() {
+    function renderShopItems(shopData) {
       const list = document.getElementById('shopList');
       list.innerHTML = '';
 
-      for (const category in shopData) {
-        for (const subcategory in shopData[category]) {
-          const items = shopData[category][subcategory];
-          items.forEach(item => {
-            const el = document.createElement("div");
-            el.className = "item";
-            el.innerHTML = `
-              <div class="info">
-                <span>${item.name}</span>
-                <span style="color: #aaa; font-size: 12px;">${item.description}</span>
-                <span style="color: #6a0dad; font-weight:bold;">$${item.price}</span>
-              </div>
-              <div class="actions">
-                <button onclick="buyItem('${item.model}', ${item.price})">Buy</button>
-              </div>
-            `;
-            list.appendChild(el);
-          });
+      for (const type in shopData) {
+        for (const category in shopData[type]) {
+          for (const subcategory in shopData[type][category]) {
+            const items = shopData[type][category][subcategory];
+            items.forEach(item => {
+              const el = document.createElement("div");
+              el.className = "item";
+              el.innerHTML = `
+                <div class="info">
+                  <span>${item.name}</span>
+                  <span style="color: #aaa; font-size: 12px;">${item.description}</span>
+                  <span style="color: #6a0dad; font-weight:bold;">$${item.price}</span>
+                </div>
+                <div class="actions">
+                  <button onclick="buyItem('${item.model}', ${item.price})">Buy</button>
+                </div>
+              `;
+              list.appendChild(el);
+            });
+          }
         }
       }
     }
@@ -287,6 +293,12 @@
     function buyItem(model, price) {
       mp.events.callRemote('furniture:buyItem', model, price);
     }
+    mp.events.add('furniture:confirmPlacement', () => {
+      // Apenas dispara reload do menu do servidor
+      mp.events.callRemote('furniture:reloadFurnitures');
+    });
+
   </script>
 </body>
+
 </html>
